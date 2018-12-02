@@ -1,14 +1,102 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package server;
 
-/**
- *
- * @author luisalho
- */
-public class Server {
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import utils.DBConnection;
+import utils.Message;
+
+public class Server extends Thread {
     
+    public static final int BD_PORT = 3336;
+    
+    private Socket clientSocket;
+    
+    private DBConnection db;
+    
+    public Server(Socket socket, String dbUrl, int dbPort) {
+        
+        this.clientSocket = socket;
+        
+        //get reference to MySQLDataBase
+        db = DBConnection.getInstance(dbUrl, dbPort);
+        
+    }
+    
+    
+    @Override
+    public void run() {
+        
+        try {
+            System.out.println("Receive User...");
+            
+            while(true){
+            
+                ObjectInputStream is = new ObjectInputStream(clientSocket.getInputStream());
+
+                Message msg = (Message)is.readObject();
+                System.out.println("Message: " + msg.getType());
+                
+                //Manage messages(commands) from user
+
+                switch( msg.getType()){
+
+                    case "INIT":
+                        System.out.println("Ip: " + clientSocket.getInetAddress());
+                        System.out.println("Port: " + clientSocket.getPort());
+                        System.out.println("User: " + msg.getUsername());
+                        
+                        break;                 
+
+                    case "START": 
+                        break;
+
+                    default: break;
+
+                }
+            }
+            
+        } catch (IOException ex) {
+            System.out.println("Error IO: " + ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+
+
+    
+     public static void main(String [] args)  {
+        
+        String ip = "localhost";
+        ServerSocket socket;
+        Socket clientSocket;
+        
+        
+        if(args.length != 1){
+            System.out.println("Invalid arguments! \nEx: java Server 'ip_bd'\n");
+            System.out.println("Get default values to IP: localhost\n");
+        }else{ 
+            ip = args[0];
+        }
+        
+        System.out.println("Starting server....");
+        
+        try {
+ 
+            socket = new ServerSocket(4555);
+           
+            while(true){
+                
+                clientSocket = socket.accept();                
+                new Server(clientSocket, ip, BD_PORT).start(); //Create thread for each user
+                
+            }
+        }catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }       
+     }
 }
