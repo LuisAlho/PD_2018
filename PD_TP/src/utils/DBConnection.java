@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  *
  * @author Nasyx
  */
-public class DBConnection implements java.sql.Driver {
+public class DBConnection {
     
     private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
     //private static final String DB_CONNECTION = "jdbc:oracle:thin:@localhost:1521:MKYONG";
@@ -150,7 +150,7 @@ public class DBConnection implements java.sql.Driver {
     public List<User> listUsers(boolean loggedIn){
         
         
-        List listUser = new ArrayList<User>();
+        List<User> listUser = new ArrayList<>();
         User p;
 
         if(loggedIn){
@@ -194,40 +194,4 @@ public class DBConnection implements java.sql.Driver {
         //TODO create query to get informatuion of one user
         return null;
     }
-
-    @Override
-    public Connection connect(String url, Properties info) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean acceptsURL(String url) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getMajorVersion() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getMinorVersion() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean jdbcCompliant() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 }
