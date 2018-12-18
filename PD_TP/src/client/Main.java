@@ -3,6 +3,7 @@
 package client;
 
 
+import client.logic.ObservableClient;
 import client.ui.LoginForm;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -68,27 +69,30 @@ public class Main {
     
     public static void main(String [] args) {
         
-        String ip = "localhost";
+        
         int port = 6400;
+        InetAddress server = null;
         
         try{
             
             if(args.length != 2){
                 System.out.println("Invalid arguments! \nEx: java Server 'ip_servidor porto_servidor'\n");
                 System.out.println("Get default values to IP: localhost , PORTO: 6400\n");
+                server = InetAddress.getByName("localhost");
             }else{
                     //Need to verify
-                    InetAddress server = InetAddress.getByName(args[0]);
+                    server = InetAddress.getByName(args[0]);
                     port = Integer.parseInt(args[1]);
 
             }
         }catch(NumberFormatException | UnknownHostException ex){
                 System.out.println("Error: " + ex.getMessage());
-                //Exit client
+                
                 System.exit(0);
         }
         
         
+        ObservableClient obsClient = new ObservableClient(server, port);
         //Start client
         LoginForm LoginForm = new LoginForm();
     }
