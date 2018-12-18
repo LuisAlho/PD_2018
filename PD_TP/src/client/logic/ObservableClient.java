@@ -29,7 +29,7 @@ public class ObservableClient extends Observable { //Class que vai notificar os 
         this.serverPort = port;
         this.server = server;
         
-        
+        startConnectionToServer();
         
     }
     

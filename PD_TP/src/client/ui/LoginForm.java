@@ -3,6 +3,7 @@ package client.ui;
 
 
 
+import client.logic.ObservableClient;
 import java.rmi.RemoteException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,13 +19,14 @@ public class LoginForm extends JFrame {
 //    ObservableGame game;
 //    GestaoRemoteInterface gestao;
     String ip;
+    ObservableClient client;
 
     /**
      * Creates new form LoginFrame
      */
-    public LoginForm() {
+    public LoginForm(ObservableClient client) {
         initComponents();
-        //this.game = game;        
+        this.client = client;        
         this.setLocationRelativeTo(null);
         this.setVisible(true);
         //this.game.setIp(ip);
@@ -133,28 +135,24 @@ public class LoginForm extends JFrame {
     private void btnRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegisterActionPerformed
         // TODO add your handling code here:
         this.dispose();
-        new RegisterForm();
+        new RegisterForm(client);
     }//GEN-LAST:event_btnRegisterActionPerformed
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
-        // TODO add your handling code here:
         
-//        try {
-//            // TODO add your handling code here:
-//            
-//            gestao = game.getServiceGestao();
-//            
-//            if (gestao.login(txtUsername.getText(), txtPassword.getText())){
-//                JOptionPane.showMessageDialog(null, "Login Success");
-//                this.dispose();
-//                new ThreeInRowView(game, txtUsername.getText());
-//            }else{
-//                JOptionPane.showMessageDialog(null, "Login Failed");
-//            }
-//        } catch (RemoteException ex) {
-//            Logger.getLogger(RegisterFrame.class.getName()).log(Level.SEVERE, null, ex);
-//            System.out.println("Error register user..." + ex);
+        //START LOGIN PROCESS
+        
+        String username;
+        String passsword;
+//        if(client.isConnected){
+//            client.doLogin(username, passsword);
+//        }else{
+//            //Message dialog (client not connected to server)
 //        }
+        
+        
+        
+        
     }//GEN-LAST:event_btnLoginActionPerformed
 
 

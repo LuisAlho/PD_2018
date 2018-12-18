@@ -92,7 +92,7 @@ public class DBConnection {
         
         if(this.setUserLoggedIn(username)){
             System.out.println("Login: " + p.toString());
-            p.setLoggedIn(1);
+            p.setLoggedIn(true);
             return p;
         }
         return null;
@@ -170,7 +170,7 @@ public class DBConnection {
                     p = new User();
                     p.setName(rs.getString("name"));
                     p.setUsername(rs.getString("username"));
-                    p.setLoggedIn(rs.getInt("loggedIn"));
+                    p.setLoggedIn(rs.getBoolean("loggedIn"));
                     System.out.println("RS Player: " + p.toString());
                     listUser.add(p);
                     

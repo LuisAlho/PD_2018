@@ -5,13 +5,15 @@
  */
 package client.ui;
 
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.JFrame;
 
 /**
  *
  * @author Nasyx
  */
-public class ClientUI extends JFrame {
+public class ClientUI extends JFrame implements Observer {
 
     /**
      * Creates new form ClientUI
@@ -171,4 +173,12 @@ public class ClientUI extends JFrame {
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void update(Observable o, Object arg) {
+        
+        System.out.println("Update Client");
+        
+        
+    }
 }

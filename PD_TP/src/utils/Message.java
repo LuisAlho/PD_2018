@@ -9,6 +9,7 @@ public class Message implements Serializable{
     
     String type; //Type of message 
     String username;
+    String password;
     String text;
     
     //Add more atributes as needed
