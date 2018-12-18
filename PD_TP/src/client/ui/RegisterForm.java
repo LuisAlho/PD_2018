@@ -11,6 +11,7 @@ import java.rmi.RemoteException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import utils.User;
 
 /**
  *
@@ -160,22 +161,24 @@ public class RegisterForm extends javax.swing.JFrame{
     }//GEN-LAST:event_txtNameActionPerformed
 
     private void btnRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegisterActionPerformed
-//        try {
-            // TODO add your handling code here:
             
-//            gestao = game.getServiceGestao();
-//            
-//            if (gestao.registerUser(txtUsername.getText(), txtPassword.getText(), txtName.getText())){
-//                JOptionPane.showMessageDialog(null, "thank you for register");
-//            }else{
-//                JOptionPane.showMessageDialog(null, "Register - Something went wrong");
-//            }
+        
+        //TODO create new fields for register user
+        
+        String username = txtUsername.getText();
+        String password = txtPassword.getText();
+        String name = txtUsername.getText();
+        
+        User user = new User();
+        user.setName(name);
+        user.setPassword(password);
+        user.setUsername(username);
+        
+        client.registerUser(user);
+                
             
             
-//        } catch (RemoteException ex) {
-//            Logger.getLogger(RegisterFrame.class.getName()).log(Level.SEVERE, null, ex);
-//            System.out.println("Error register user..." + ex);
-//        }
+
         
             
     }//GEN-LAST:event_btnRegisterActionPerformed

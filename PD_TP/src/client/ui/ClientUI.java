@@ -5,6 +5,7 @@
  */
 package client.ui;
 
+import client.logic.ObservableClient;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JFrame;
@@ -14,17 +15,22 @@ import javax.swing.JFrame;
  * @author Nasyx
  */
 public class ClientUI extends JFrame implements Observer {
+    
+    ObservableClient client;
 
     /**
      * Creates new form ClientUI
      */
-    public ClientUI() {
+    public ClientUI(ObservableClient client) {
         initComponents();
         
 
         /* Create and display the form */
+        this.client = client;
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+        //adiciona ClientUI a lista de observers
+        this.client.addObserver(this);
     }
 
     /**

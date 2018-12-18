@@ -93,7 +93,17 @@ public class Main {
         
         
         ObservableClient obsClient = new ObservableClient(server, port);
-        //Start client
+        if(!obsClient.startConnectionToServer()){
+            
+            System.out.println("Exit");
+            System.exit(0);
+        
+        }
+            
+        
+        
+        System.out.println("Start UI");
+        //Start client UI
         LoginForm LoginForm = new LoginForm(obsClient);
     }
     

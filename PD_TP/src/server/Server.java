@@ -46,13 +46,13 @@ public class Server extends Thread {
                     case "LOGIN":
                         System.out.println("Ip: " + clientSocket.getInetAddress());
                         System.out.println("Port: " + clientSocket.getPort());
-                        System.out.println("User: " + msg.getUsername());
+                        System.out.println("User: " + msg.getUser().toString());
                         
                         break;      
                     case "REGISTER":
                         System.out.println("Ip: " + clientSocket.getInetAddress());
                         System.out.println("Port: " + clientSocket.getPort());
-                        System.out.println("User: " + msg.getUsername());
+                        System.out.println("User: " + msg.getUser().toString());
                         
                         break;  
 
