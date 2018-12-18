@@ -6,12 +6,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import utils.Constants;
 import utils.DBConnection;
 import utils.Message;
 
 public class Server extends Thread {
-    
-    public static final int BD_PORT = 3336;
     
     private Socket clientSocket;
     
@@ -31,7 +30,7 @@ public class Server extends Thread {
     public void run() {
         
         try {
-            System.out.println("Receive User...");
+            System.out.println("Processing new Client...");
             
             while(true){
             
@@ -44,12 +43,18 @@ public class Server extends Thread {
 
                 switch( msg.getType()){
 
-                    case "INIT":
+                    case "LOGIN":
                         System.out.println("Ip: " + clientSocket.getInetAddress());
                         System.out.println("Port: " + clientSocket.getPort());
-                        System.out.println("User: " + msg.getUsername());
+                        System.out.println("User: " + msg.getUser().toString());
                         
-                        break;                 
+                        break;      
+                    case "REGISTER":
+                        System.out.println("Ip: " + clientSocket.getInetAddress());
+                        System.out.println("Port: " + clientSocket.getPort());
+                        System.out.println("User: " + msg.getUser().toString());
+                        
+                        break;  
 
                     case "START": 
                         break;
@@ -87,12 +92,13 @@ public class Server extends Thread {
         
         try {
  
+            System.out.println("Waiting for client....");
             socket = new ServerSocket(4555);
            
             while(true){
                 
                 clientSocket = socket.accept();                
-                new Server(clientSocket, ip, BD_PORT).start(); //Create thread for each user
+                new Server(clientSocket, ip, Constants.BD_PORT).start(); //Create thread for each user
                 
             }
         }catch (IOException ex) {

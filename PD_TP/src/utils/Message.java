@@ -9,7 +9,9 @@ public class Message implements Serializable{
     
     String type; //Type of message 
     String username;
+    String password;
     String text;
+    User user;
     
     //Add more atributes as needed
    
@@ -18,6 +20,14 @@ public class Message implements Serializable{
 
     public String getType() {
         return type;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+    
+    public User getUser() {
+        return this.user;
     }
 
     public void setType(String type) {
