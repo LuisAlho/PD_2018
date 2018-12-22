@@ -1,25 +1,18 @@
 
 package client.ui;
 
-
-
 import client.logic.ObservableClient;
-import java.rmi.RemoteException;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import utils.Constants;
+import utils.Message;
 import utils.User;
 
-/**
- *
- * @author Nasyx
- */
-public class LoginForm extends JFrame {
+
+public class LoginForm extends JFrame implements Observer {
     
-//    ObservableGame game;
-//    GestaoRemoteInterface gestao;
     String ip;
     ObservableClient client;
 
@@ -31,6 +24,7 @@ public class LoginForm extends JFrame {
         this.client = client;        
         this.setLocationRelativeTo(null);
         this.setVisible(true);
+        this.client.addObserver(this);
         //this.game.setIp(ip);
     }
 
@@ -137,13 +131,14 @@ public class LoginForm extends JFrame {
     private void btnRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegisterActionPerformed
         // TODO add your handling code here:
         this.dispose();
+        this.client.deleteObserver(this);
         new RegisterForm(client);
     }//GEN-LAST:event_btnRegisterActionPerformed
 
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
                
         String username = txtUsername.getText();
-        String password = Arrays.toString(txtPassword.getPassword());
+        String password = new String(txtPassword.getPassword());
         
         User user = new User();
         user.setPassword(password);
@@ -163,4 +158,33 @@ public class LoginForm extends JFrame {
     private javax.swing.JPasswordField txtPassword;
     private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void update(Observable o, Object arg) {
+        
+        System.out.println("UPDATE LOGIN");
+        
+        if(arg instanceof Message){
+        
+            Message msg = (Message)arg;
+            
+            if(msg.getType().equals(Constants.LOGIN_SUCCESSFULL)){
+                this.dispose();
+                client.deleteObserver(this);
+                new ClientUI(client);
+            }else{
+                
+                JOptionPane.showMessageDialog(this,
+                    "Login Failed",
+                    "Login",
+                    JOptionPane.ERROR_MESSAGE);
+            
+            }
+
+        }
+        
+        
+        
+        
+    }
 }

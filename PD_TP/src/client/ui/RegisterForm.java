@@ -8,30 +8,36 @@ package client.ui;
 
 import client.logic.ObservableClient;
 import java.rmi.RemoteException;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import utils.Constants;
+import utils.Message;
 import utils.User;
 
 /**
  *
  * @author Nasyx
  */
-public class RegisterForm extends javax.swing.JFrame{
+public class RegisterForm extends JFrame implements Observer{
     
-    private ObservableClient client;
-    //private GestaoRemoteInterface gestao;
+    ObservableClient client;
     String ip;
 
     /**
      * Creates new form RegisterFrame
      */
     public RegisterForm(ObservableClient client) {
-        this.client = client;
         initComponents();
+        
+        this.client = client;
         this.setLocationRelativeTo(null);
         this.setVisible(true);
-        //this.ip = ip;
+        this.client.addObserver(this);
+        
     }
 
     /**
@@ -167,7 +173,7 @@ public class RegisterForm extends javax.swing.JFrame{
         
         String username = txtUsername.getText();
         String password = txtPassword.getText();
-        String name = txtUsername.getText();
+        String name = txtName.getText();
         
         User user = new User();
         user.setName(name);
@@ -177,15 +183,12 @@ public class RegisterForm extends javax.swing.JFrame{
         client.registerUser(user);
                 
             
-            
-
-        
-            
     }//GEN-LAST:event_btnRegisterActionPerformed
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         // TODO add your handling code here:
         this.dispose();
+        this.client.deleteObserver(this);
         new LoginForm(client);
     }//GEN-LAST:event_btnCancelActionPerformed
 
@@ -203,5 +206,30 @@ public class RegisterForm extends javax.swing.JFrame{
     private javax.swing.JTextField txtPassword;
     private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void update(Observable o, Object arg) {
+        
+        System.out.println("UPDATE REGISTER");
+        
+        if(arg instanceof Message){
+        
+            Message msg = (Message)arg;
+            
+            if(msg.getType().equals(Constants.REGISTER_SUCCESSFULL)){
+                this.dispose();
+                client.deleteObserver(this);
+                new LoginForm(client);
+            }else{
+                
+                JOptionPane.showMessageDialog(this,
+                    "Register Failed",
+                    "Register",
+                    JOptionPane.ERROR_MESSAGE);
+            
+            }
+
+        }
+    }
 }
 

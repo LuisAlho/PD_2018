@@ -40,7 +40,7 @@ public class ObservableClient extends Observable implements Runnable { //Class q
     
         try {
             socket = new Socket(server, serverPort);
-            socket.setSoTimeout(Constants.TIMEOUT);
+            //socket.setSoTimeout(Constants.TIMEOUT);
             
             if(socket.isConnected())
                 new Thread(this).start();
@@ -100,6 +100,9 @@ public class ObservableClient extends Observable implements Runnable { //Class q
             
             
         } catch (IOException ex) {
+            
+            System.out.println("Login client error");
+            
             Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -110,47 +113,52 @@ public class ObservableClient extends Observable implements Runnable { //Class q
         
         System.out.println("Waiting messages");
         
-        ObjectInputStream is = null;
+        ObjectInputStream ois = null;
         try {
+            
             
             while(true){
             
-                is = new ObjectInputStream(socket.getInputStream());
-                Message msg = (Message)is.readObject();
+                ois = new ObjectInputStream(socket.getInputStream());
+                Message msg = (Message)ois.readObject();
                 System.out.println("Message: " + msg.getType());
                 //Manage messages(commands) from user
                 
+                System.out.println("Observers: " + this.countObservers());
+                
                 switch( msg.getType()){
                     
-                    case "LOGIN":
+                    case "LOGIN_SUCCESSFULL":
                         System.out.println("Message: " + msg.getType());
+                        setChanged();
+                        notifyObservers(msg);
                         
                         break;
-                    case "REGISTER":
+                    case "REGISTER_SUCCESSFULL":
                         System.out.println("Message: " + msg.getType());
                         
-                        break;
-                        
-                    case "START":
-                        
-                        
+                        setChanged();
+                        notifyObservers(msg);
                         
                         break;
                         
                     default: break;
                     
                 }
+                
+                //is.close();
             }  
         } catch (IOException ex) {
             Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-            try {
-                is.close();
-            } catch (IOException ex) {
-                Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
-            }
+//            try {
+//                if(is != null)
+//                    is.close();
+//            } catch (IOException ex) {
+//                Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
+//            }
         }
     }
        

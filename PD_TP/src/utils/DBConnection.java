@@ -3,15 +3,13 @@ package utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,11 +70,11 @@ public class DBConnection {
 
     }
     
-    public User userLogin(String username, String password) throws SQLException {
+    public User loginUser(String username, String password) throws SQLException, SQLSyntaxErrorException {
         
         User p =  new User();
         
-        String selectTableSQL = "SELECT idplayer, password, name, username FROM user WHERE (password like '" + password + "') AND (username like '" + username + "')";
+        String selectTableSQL = "SELECT password, name, username FROM users WHERE (password like '" + password + "') AND (username like '" + username + "')";
         System.out.println(selectTableSQL);
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(selectTableSQL);
@@ -90,9 +88,9 @@ public class DBConnection {
             p.setUsername(rs.getString("username"));
         }
         
-        if(this.setUserLoggedIn(username)){
-            System.out.println("Login: " + p.toString());
+        if(this.setUserLoggedIn(username, true)){
             p.setLoggedIn(true);
+            System.out.println("User: " + p.getName() + "set as logged in..");
             return p;
         }
         return null;
@@ -101,7 +99,7 @@ public class DBConnection {
     public boolean userLogout(String username){
         
         try {
-            String sql = "UPDATE user SET loggedIn = 0 WHERE username like '" + username + "'";
+            String sql = "UPDATE users SET loggedIn = 0 WHERE username like '" + username + "'";
             
             Statement statement = connection.createStatement();
             int rs = statement.executeUpdate(sql);
@@ -114,16 +112,16 @@ public class DBConnection {
         }
     }
     
-    public boolean registerUser(String username, String password, String name) throws SQLException {
+    public boolean registerUser(User user) throws SQLException {
         
-        //TODO insert player on database
-        String selectTableSQL = "INSERT INTO user(name, username, password) VALUES (?,?,?,?)" ;
+        //TODO insert user on database
+        String selectTableSQL = "INSERT INTO users(name, username, password) VALUES (?,?,?)" ;
 
         PreparedStatement pst = connection.prepareCall(selectTableSQL);
-        pst.setString(1, name);
-        pst.setString(2, username);
-        pst.setString(3, password);
-        pst.setInt(4, 1);
+        pst.setString(1, user.getName());
+        pst.setString(2, user.getUsername());
+        pst.setString(3, user.getPassword());
+        //pst.setInt(4, 1);
 
         int rs = pst.executeUpdate();
         if(rs == 0) 
@@ -131,10 +129,10 @@ public class DBConnection {
         return true;
     }
     
-    private boolean setUserLoggedIn(String username){
+    public boolean setUserLoggedIn(String username, boolean isLogged){
         
         try {
-            String sql = "UPDATE user SET loggedIn = 1 WHERE username like '" + username + "'";
+            String sql = "UPDATE users SET isLogged = 1 WHERE username like '" + username + "'";
             
             Statement statement = connection.createStatement();
             int rs = statement.executeUpdate(sql);
@@ -142,7 +140,7 @@ public class DBConnection {
                 return false;
             return true;
         } catch (SQLException ex) {
-            System.out.println("error updating status of user.. :" + ex);
+            System.out.println("error updating status of user - isLogged.. :" + ex);
             return false;
         }
     }
@@ -156,7 +154,7 @@ public class DBConnection {
         if(loggedIn){
             try {
                 //get all users loggedIn
-                String sql = "SELECT idplayer, name, username, loggedIn FROM player WHERE loggedIn = 1";
+                String sql = "SELECT name, username, loggedIn FROM users WHERE loggedIn = 1";
                 //String sql = "SELECT * FROM player";
                 Statement statement = connection.createStatement();
                 ResultSet rs = statement.executeQuery(sql);
