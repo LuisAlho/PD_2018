@@ -49,11 +49,13 @@ public class Server extends Observable {
      }
      
      
+     
+     
      public void startServer(){
          
-         System.out.println("Starting server....");
+        System.out.println("Starting server....");
          
-         try {
+        try {
  
             System.out.println("Waiting for client....");
             serverSocket = new ServerSocket(4555);
@@ -65,8 +67,9 @@ public class Server extends Observable {
                 
             }
         }catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }       
+           Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+         
+        }     
      }
      
      protected boolean registerClient(User user){

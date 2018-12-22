@@ -128,13 +128,29 @@ public class ObservableClient extends Observable implements Runnable { //Class q
                 
                 switch( msg.getType()){
                     
-                    case "LOGIN_SUCCESSFULL":
+                    case Constants.LOGIN_SUCCESSFULL:
                         System.out.println("Message: " + msg.getType());
                         setChanged();
                         notifyObservers(msg);
                         
                         break;
-                    case "REGISTER_SUCCESSFULL":
+                        
+                    case Constants.REGISTER_SUCCESSFULL:
+                        System.out.println("Message: " + msg.getType());
+                        
+                        setChanged();
+                        notifyObservers(msg);
+                        
+                        break;
+                        
+                    case Constants.LOGIN_FAIL:
+                        System.out.println("Message: " + msg.getType());
+                        setChanged();
+                        notifyObservers(msg);
+                        
+                        break;
+                        
+                    case Constants.REGISTER_FAIL:
                         System.out.println("Message: " + msg.getType());
                         
                         setChanged();

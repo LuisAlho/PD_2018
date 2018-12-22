@@ -90,7 +90,7 @@ public class DBConnection {
         
         if(this.setUserLoggedIn(username, true)){
             p.setLoggedIn(true);
-            System.out.println("User: " + p.getName() + "set as logged in..");
+            System.out.println("User: " + p.getName() + " set as logged in..");
             return p;
         }
         return null;
@@ -121,9 +121,9 @@ public class DBConnection {
         pst.setString(1, user.getName());
         pst.setString(2, user.getUsername());
         pst.setString(3, user.getPassword());
-        //pst.setInt(4, 1);
 
         int rs = pst.executeUpdate();
+        pst.close();
         if(rs == 0) 
             return false;
         return true;
@@ -132,19 +132,13 @@ public class DBConnection {
     public boolean setUserLoggedIn(String username, boolean isLogged){
         
         try {
-            //String sql = "UPDATE users SET isLogged = 1 WHERE username like '" + username + "'";
             String sql = "UPDATE users SET isLogged = ? WHERE username like ?";
-            //String selectTableSQL = "INSERT INTO users(name, username, password) VALUES (?,?,?)" ;
-            
+
             PreparedStatement pst = connection.prepareCall(sql);
             
             pst.setBoolean(1, isLogged);
             pst.setString(2, username);
-            
-            
-            
-//            Statement statement = connection.createStatement();
-//            int rs = statement.executeUpdate(sql);
+
 
             int rs = pst.executeUpdate();
             pst.close();
@@ -156,6 +150,72 @@ public class DBConnection {
             return false;
         }
     }
+    
+    public boolean setUserDetails(String ip, int udp_port, int tcp_port, String username){
+        
+        try {
+            String sql = "UPDATE users SET ip = ?, udp_port = ?, tcp_port = ?  WHERE username like ?";
+
+            PreparedStatement pst = connection.prepareCall(sql);
+            
+            pst.setString(1, ip);
+            pst.setInt(2, udp_port);
+            pst.setInt(3, tcp_port);
+            pst.setString(4, username);
+            
+            int rs = pst.executeUpdate();
+            pst.close();
+            if(rs == 0) 
+                return false;
+            return true;
+        } catch (SQLException ex) {
+            System.out.println("error updating status of user - isLogged.. :" + ex);
+            return false;
+        }
+     
+    }
+    
+    public boolean incUserCount(String username){
+        
+        try {
+            String sql = "UPDATE users SET count = count + 1 WHERE username like ?";
+
+            PreparedStatement pst = connection.prepareCall(sql);
+            
+            pst.setString(1, username);
+            
+            int rs = pst.executeUpdate();
+            pst.close();
+            if(rs == 0) 
+                return false;
+            return true;
+        } catch (SQLException ex) {
+            System.out.println("error updating status of user - isLogged.. :" + ex);
+            return false;
+        }
+    }
+    
+    public boolean resetUserCount(String username){
+        
+     try {
+            String sql = "UPDATE users SET count = 0 WHERE username like ?";
+
+            PreparedStatement pst = connection.prepareCall(sql);
+            
+            pst.setString(1, username);
+            
+            int rs = pst.executeUpdate();
+            pst.close();
+            if(rs == 0) 
+                return false;
+            return true;
+        } catch (SQLException ex) {
+            System.out.println("error updating status of user - isLogged.. :" + ex);
+            return false;
+        }
+    
+    }
+    
 
     public List<User> listUsers(boolean loggedIn){
         
@@ -201,7 +261,7 @@ public class DBConnection {
 
     private User getUser(int id){
 
-        //TODO create query to get informatuion of one user
+        //TODO create query to get information of one user
         return null;
     }
 }
