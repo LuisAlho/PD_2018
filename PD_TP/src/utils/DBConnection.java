@@ -132,10 +132,22 @@ public class DBConnection {
     public boolean setUserLoggedIn(String username, boolean isLogged){
         
         try {
-            String sql = "UPDATE users SET isLogged = 1 WHERE username like '" + username + "'";
+            //String sql = "UPDATE users SET isLogged = 1 WHERE username like '" + username + "'";
+            String sql = "UPDATE users SET isLogged = ? WHERE username like ?";
+            //String selectTableSQL = "INSERT INTO users(name, username, password) VALUES (?,?,?)" ;
             
-            Statement statement = connection.createStatement();
-            int rs = statement.executeUpdate(sql);
+            PreparedStatement pst = connection.prepareCall(sql);
+            
+            pst.setBoolean(1, isLogged);
+            pst.setString(2, username);
+            
+            
+            
+//            Statement statement = connection.createStatement();
+//            int rs = statement.executeUpdate(sql);
+
+            int rs = pst.executeUpdate();
+            pst.close();
             if(rs == 0) 
                 return false;
             return true;
