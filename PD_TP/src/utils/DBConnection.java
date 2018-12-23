@@ -175,6 +175,14 @@ public class DBConnection {
      
     }
     
+    
+    public boolean setUserFilesList(){
+    
+    
+    
+        return true;
+    }
+    
     public boolean incUserCount(String username){
         
         try {

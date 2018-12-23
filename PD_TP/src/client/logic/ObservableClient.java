@@ -2,12 +2,15 @@
 package client.logic;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import java.util.Observable;
 
@@ -107,6 +110,20 @@ public class ObservableClient extends Observable implements Runnable { //Class q
         }
 
     }
+    
+    public void listFolder(String path){
+        
+        System.out.println("Get list of files...");
+    
+        File f = new File(path);
+        ArrayList<File> files = new ArrayList<>(Arrays.asList(f.listFiles()));
+        
+        System.out.println("List files: " + files.toString() );
+    
+    
+    }
+    
+    
 
     @Override
     public void run() {

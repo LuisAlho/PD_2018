@@ -5,7 +5,17 @@
  */
 package client.logic;
 
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.util.Observable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -21,12 +31,31 @@ public class FolderWatch implements Runnable {
         this.client = client;
     }
     
-    
-    
-
     @Override
     public void run() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+       
+        try {
+            WatchService watchService = FileSystems.getDefault().newWatchService();
+            
+            Path path = Paths.get(System.getProperty("user.home"));
+            
+            path.register(watchService,
+                    StandardWatchEventKinds.ENTRY_CREATE,
+                    StandardWatchEventKinds.ENTRY_DELETE,
+                    StandardWatchEventKinds.ENTRY_MODIFY);
+            
+            WatchKey key;
+            while ((key = watchService.take()) != null) {
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    System.out.println("Event kind:" + event.kind() + ". File affected: " + event.context() + ".");
+                }
+                key.reset();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(FolderWatch.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(FolderWatch.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }

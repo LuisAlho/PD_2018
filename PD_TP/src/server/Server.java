@@ -48,9 +48,6 @@ public class Server extends Observable {
         
      }
      
-     
-     
-     
      public void startServer(){
          
         System.out.println("Starting server....");
