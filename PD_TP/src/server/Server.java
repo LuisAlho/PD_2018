@@ -1,85 +1,38 @@
 package server;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
+import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.Constants;
 import utils.DBConnection;
 import utils.Message;
+import utils.User;
 
-public class Server extends Thread {
+public class Server extends Observable {
     
-    private Socket clientSocket;
+    private ServerSocket serverSocket;
     
-    private DBConnection db;
     
-    public Server(Socket socket, String dbUrl, int dbPort) {
+    private final DBConnection db;
+    
+    public Server(String dbUrl, int dbPort) {
         
-        this.clientSocket = socket;
         
         //get reference to MySQLDataBase
         db = DBConnection.getInstance(dbUrl, dbPort);
         
     }
-    
-    
-    @Override
-    public void run() {
-        
-        try {
-            System.out.println("Processing new Client...");
-            
-            while(true){
-            
-                ObjectInputStream is = new ObjectInputStream(clientSocket.getInputStream());
 
-                Message msg = (Message)is.readObject();
-                System.out.println("Message: " + msg.getType());
-                
-                //Manage messages(commands) from user
-
-                switch( msg.getType()){
-
-                    case "LOGIN":
-                        System.out.println("Ip: " + clientSocket.getInetAddress());
-                        System.out.println("Port: " + clientSocket.getPort());
-                        System.out.println("User: " + msg.getUser().toString());
-                        
-                        break;      
-                    case "REGISTER":
-                        System.out.println("Ip: " + clientSocket.getInetAddress());
-                        System.out.println("Port: " + clientSocket.getPort());
-                        System.out.println("User: " + msg.getUser().toString());
-                        
-                        break;  
-
-                    case "START": 
-                        break;
-
-                    default: break;
-
-                }
-            }
-            
-        } catch (IOException ex) {
-            System.out.println("Error IO: " + ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-
-
-    
      public static void main(String [] args)  {
         
         String ip = "localhost";
-        ServerSocket socket;
-        Socket clientSocket;
-        
+//        ServerSocket socket;
+//        Socket clientSocket;
         
         if(args.length != 1){
             System.out.println("Invalid arguments! \nEx: java Server 'ip_bd'\n");
@@ -88,21 +41,68 @@ public class Server extends Thread {
             ip = args[0];
         }
         
-        System.out.println("Starting server....");
         
+        Server server = new Server(ip, Constants.BD_PORT);
+        server.startServer();
+        
+        
+     }
+     
+     public void startServer(){
+         
+        System.out.println("Starting server....");
+         
         try {
  
             System.out.println("Waiting for client....");
-            socket = new ServerSocket(4555);
+            serverSocket = new ServerSocket(4555);
            
             while(true){
-                
-                clientSocket = socket.accept();                
-                new Server(clientSocket, ip, Constants.BD_PORT).start(); //Create thread for each user
+                               
+                Socket socketToClient = serverSocket.accept();                
+                new ClientThread(socketToClient, this).start(); //Create thread for each user
                 
             }
         }catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }       
+           Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+         
+        }     
      }
+     
+     protected boolean registerClient(User user){
+     
+        try {
+            return db.registerUser(user);
+
+        } catch (SQLException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+     
+     }
+     
+     
+     protected User loginClient(String username, String password){
+     
+        User user = null;
+
+        try {
+            user = db.loginUser(username, password);
+            if( user != null)
+                return user;                
+            return null;
+  
+        } catch (SQLException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }       
+                
+     }
+     
+     protected void setLoggedIn(String username, boolean loggedIn){
+     
+         this.db.setUserLoggedIn(username, false);
+     
+     }
+
 }

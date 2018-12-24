@@ -2,12 +2,15 @@
 package client.logic;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import java.util.Observable;
 
@@ -40,7 +43,7 @@ public class ObservableClient extends Observable implements Runnable { //Class q
     
         try {
             socket = new Socket(server, serverPort);
-            socket.setSoTimeout(Constants.TIMEOUT);
+            //socket.setSoTimeout(Constants.TIMEOUT);
             
             if(socket.isConnected())
                 new Thread(this).start();
@@ -100,57 +103,95 @@ public class ObservableClient extends Observable implements Runnable { //Class q
             
             
         } catch (IOException ex) {
+            
+            System.out.println("Login client error");
+            
             Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
+    
+    public void listFolder(String path){
+        
+        System.out.println("Get list of files...");
+    
+        File f = new File(path);
+        ArrayList<File> files = new ArrayList<>(Arrays.asList(f.listFiles()));
+        
+        System.out.println("List files: " + files.toString() );
+    
+    
+    }
+    
+    
 
     @Override
     public void run() {
         
         System.out.println("Waiting messages");
         
-        ObjectInputStream is = null;
+        ObjectInputStream ois = null;
         try {
+            
             
             while(true){
             
-                is = new ObjectInputStream(socket.getInputStream());
-                Message msg = (Message)is.readObject();
+                ois = new ObjectInputStream(socket.getInputStream());
+                Message msg = (Message)ois.readObject();
                 System.out.println("Message: " + msg.getType());
                 //Manage messages(commands) from user
                 
+                System.out.println("Observers: " + this.countObservers());
+                
                 switch( msg.getType()){
                     
-                    case "LOGIN":
+                    case Constants.LOGIN_SUCCESSFULL:
                         System.out.println("Message: " + msg.getType());
-                        
-                        break;
-                    case "REGISTER":
-                        System.out.println("Message: " + msg.getType());
+                        setChanged();
+                        notifyObservers(msg);
                         
                         break;
                         
-                    case "START":
+                    case Constants.REGISTER_SUCCESSFULL:
+                        System.out.println("Message: " + msg.getType());
                         
+                        setChanged();
+                        notifyObservers(msg);
                         
+                        break;
+                        
+                    case Constants.LOGIN_FAIL:
+                        System.out.println("Message: " + msg.getType());
+                        setChanged();
+                        notifyObservers(msg);
+                        
+                        break;
+                        
+                    case Constants.REGISTER_FAIL:
+                        System.out.println("Message: " + msg.getType());
+                        
+                        setChanged();
+                        notifyObservers(msg);
                         
                         break;
                         
                     default: break;
                     
                 }
+                
+                //is.close();
             }  
         } catch (IOException ex) {
             Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-            try {
-                is.close();
-            } catch (IOException ex) {
-                Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
-            }
+//            try {
+//                if(is != null)
+//                    is.close();
+//            } catch (IOException ex) {
+//                Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
+//            }
         }
     }
        

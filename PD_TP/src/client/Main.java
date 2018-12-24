@@ -14,57 +14,11 @@ import java.util.logging.Logger;
 
 public class Main {
     
-    /*
-    
-    Deve ser indicado aos utilizadores o endereço IP e o porto TCP de escuta de um
-    determinado servidor
-    
-    */
     
     private int serverPort;
     private String serverIp;
     private Socket socket;
-    
-    
-    public Main(String ip, int port){
-    
-//        this.serverIp = ip;
-//        this.serverPort = port;
-//        
-//        this.start();
-        
-    }
-    
-    private void start(){
-        
-        
-        
-//        try {
-//            socket = new Socket(InetAddress.getByName(this.serverIp), this.serverPort);
-//            
-//            socket.setSoTimeout(100000);
-//            
-//            
-//            //Send message to server
-//            
-//            
-//            
-//            
-//            
-//            
-//            //***********************
-//            
-//        } catch (UnknownHostException ex) {
-//            //Erro inetaddress
-//            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (IOException ex) {
-//            
-//            //Erro socket
-//            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-        
-    }
-    
+ 
     
     
     public static void main(String [] args) {
@@ -80,7 +34,7 @@ public class Main {
                 System.out.println("Get default values to IP: localhost , PORTO: 4555\n");
                 server = InetAddress.getByName("localhost");
             }else{
-                    //Need to verify
+                    
                     server = InetAddress.getByName(args[0]);
                     port = Integer.parseInt(args[1]);
 
