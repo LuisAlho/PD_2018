@@ -33,11 +33,13 @@ public class FolderWatch implements Runnable {
     
     @Override
     public void run() {
+        
+        System.out.println("Folder Watch service running");
        
         try {
             WatchService watchService = FileSystems.getDefault().newWatchService();
             
-            Path path = Paths.get(System.getProperty("user.home"));
+            Path path = Paths.get("./downloads");
             
             path.register(watchService,
                     StandardWatchEventKinds.ENTRY_CREATE,
