@@ -30,16 +30,21 @@ public class ObservableClient extends Observable implements Runnable { //Class q
     private int serverPort;
     private Socket socket;
     private boolean isConnected;
+    private FolderWatch folderWatch;
    
     
     public ObservableClient(InetAddress server, int port) {
         
         this.serverPort = port;
         this.server = server;
+        folderWatch = new FolderWatch(this);
     }
     
     
     public boolean startConnectionToServer(){
+        
+        
+        new Thread(folderWatch).start();
     
         try {
             socket = new Socket(server, serverPort);
@@ -114,12 +119,22 @@ public class ObservableClient extends Observable implements Runnable { //Class q
     public void listFolder(String path){
         
         System.out.println("Get list of files...");
-    
+            
+        
+        try{
+        
         File f = new File(path);
         ArrayList<File> files = new ArrayList<>(Arrays.asList(f.listFiles()));
         
         System.out.println("List files: " + files.toString() );
     
+        
+        }catch(Exception ex){
+            System.out.println("Erro read file: " + path);
+            System.out.println("Error... " + ex.getMessage());
+        }
+       
+        
     
     }
     

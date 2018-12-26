@@ -189,8 +189,9 @@ public class ClientUI extends JFrame implements Observer {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        System.out.println("List files.... button");
-        this.client.listFolder("../");
+        String folder = "./downloads";
+        System.out.println("List files.... button: " + folder);
+        this.client.listFolder(folder);
     }//GEN-LAST:event_jButton4ActionPerformed
 
 
