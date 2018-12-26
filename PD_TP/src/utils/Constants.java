@@ -14,6 +14,6 @@ public interface Constants {
     public static final String LOGIN_FAIL = "LOGIN_FAIL";
     public static final String REGISTER_SUCCESSFULL = "REGISTER_SUCCESSFULL";
     public static final String REGISTER_FAIL = "REGISTER_FAIL";
-    
+    public static final String SET_LIST_OF_FILES = "SET_LIST_OF_FILES";
     
 }

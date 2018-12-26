@@ -62,6 +62,7 @@ public class ClientThread extends Thread implements Observer{
                         
                         if(user != null){
                             msg.setType(Constants.LOGIN_SUCCESSFULL);
+                            msg.setUser(user);
                         }
                         else{
                             msg.setType(Constants.LOGIN_FAIL);
@@ -80,8 +81,14 @@ public class ClientThread extends Thread implements Observer{
                             msg.setType(Constants.REGISTER_FAIL);
                         }
                         sendMessage(msg);
+
+                        break;
                         
+                    case Constants.SET_LIST_OF_FILES:
                         
+                        System.out.println("List of files received: " + msg.getType());
+                        server.setListOfFiles(msg.getUser(), msg.getListOfFiles());
+                            
                         
                         break;
 
