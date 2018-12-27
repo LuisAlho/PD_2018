@@ -1,80 +1,41 @@
 package server;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.rmi.RemoteException;
+import java.rmi.server.RemoteServer;
+import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
+import java.util.List;
+import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import utils.Constants;
 import utils.DBConnection;
 import utils.Message;
+import utils.User;
 
-public class Server extends Thread {
+public class Server extends Observable {
     
-    public static final int BD_PORT = 3336;
+    private ServerSocket serverSocket;
     
-    private Socket clientSocket;
     
-    private DBConnection db;
+    private final DBConnection db;
     
-    public Server(Socket socket, String dbUrl, int dbPort) {
+    public Server(String dbUrl, int dbPort) {
         
-        this.clientSocket = socket;
         
         //get reference to MySQLDataBase
         db = DBConnection.getInstance(dbUrl, dbPort);
         
     }
-    
-    
-    @Override
-    public void run() {
-        
-        try {
-            System.out.println("Receive User...");
-            
-            while(true){
-            
-                ObjectInputStream is = new ObjectInputStream(clientSocket.getInputStream());
 
-                Message msg = (Message)is.readObject();
-                System.out.println("Message: " + msg.getType());
-                
-                //Manage messages(commands) from user
-
-                switch( msg.getType()){
-
-                    case "INIT":
-                        System.out.println("Ip: " + clientSocket.getInetAddress());
-                        System.out.println("Port: " + clientSocket.getPort());
-                        System.out.println("User: " + msg.getUsername());
-                        
-                        break;                 
-
-                    case "START": 
-                        break;
-
-                    default: break;
-
-                }
-            }
-            
-        } catch (IOException ex) {
-            System.out.println("Error IO: " + ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-
-
-    
      public static void main(String [] args)  {
         
         String ip = "localhost";
-        ServerSocket socket;
-        Socket clientSocket;
-        
+//        ServerSocket socket;
+//        Socket clientSocket;
         
         if(args.length != 1){
             System.out.println("Invalid arguments! \nEx: java Server 'ip_bd'\n");
@@ -82,21 +43,93 @@ public class Server extends Thread {
         }else{ 
             ip = args[0];
         }
+        Server server =  null;
+//        try{
+            
+            server = new Server(ip, Constants.BD_PORT);
         
+            RemoteServer remoteServer;
+            //remoteServer = new RemoteServer();
+        
+//        }catch(RemoteException ex){
+//            System.out.println("Error: " + ex.getMessage());
+//            System.exit(1);
+//        }
+        
+        server.startServer();
+        
+        
+     }
+     
+     public void startServer(){
+         
         System.out.println("Starting server....");
-        
+         
         try {
  
-            socket = new ServerSocket(4555);
+            System.out.println("Waiting for client....");
+            serverSocket = new ServerSocket(4555);
            
             while(true){
-                
-                clientSocket = socket.accept();                
-                new Server(clientSocket, ip, BD_PORT).start(); //Create thread for each user
+                               
+                Socket socketToClient = serverSocket.accept();                
+                new ClientThread(socketToClient, this).start(); //Create thread for each user
                 
             }
         }catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }       
+           Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+         
+        }     
      }
+     
+     protected boolean registerClient(User user){
+     
+        try {
+            return db.registerUser(user);
+
+        } catch (SQLException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+     
+     }
+     
+     
+     protected User loginClient(String username, String password){
+     
+        User user = null;
+
+        try {
+            user = db.loginUser(username, password);
+            if( user != null)
+                return user;                
+            return null;
+  
+        } catch (SQLException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }       
+                
+     }
+     
+     protected void setLoggedIn(String username, boolean loggedIn){
+     
+         this.db.setUserLoggedIn(username, false);
+     
+     }
+     
+     
+     protected void setListOfFiles(User user, List listOfFiles){
+         
+         System.out.println("Update list of files in DB");
+     
+         if((!listOfFiles.isEmpty()) && (listOfFiles != null))
+            db.setUserFilesList(user, listOfFiles);
+         
+     }
+
+    protected List<User> getLoggedUsers() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

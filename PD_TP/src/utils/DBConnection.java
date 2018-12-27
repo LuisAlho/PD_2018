@@ -1,17 +1,17 @@
 package utils;
 
 
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  *
  * @author Nasyx
  */
-public class DBConnection implements java.sql.Driver {
+public class DBConnection {
     
     private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
     //private static final String DB_CONNECTION = "jdbc:oracle:thin:@localhost:1521:MKYONG";
@@ -72,11 +72,11 @@ public class DBConnection implements java.sql.Driver {
 
     }
     
-    public User userLogin(String username, String password) throws SQLException {
+    public User loginUser(String username, String password) throws SQLException, SQLSyntaxErrorException {
         
         User p =  new User();
         
-        String selectTableSQL = "SELECT idplayer, password, name, username FROM user WHERE (password like '" + password + "') AND (username like '" + username + "')";
+        String selectTableSQL = "SELECT password, name, username FROM users WHERE (password like '" + password + "') AND (username like '" + username + "')";
         System.out.println(selectTableSQL);
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(selectTableSQL);
@@ -90,9 +90,9 @@ public class DBConnection implements java.sql.Driver {
             p.setUsername(rs.getString("username"));
         }
         
-        if(this.setUserLoggedIn(username)){
-            System.out.println("Login: " + p.toString());
-            p.setLoggedIn(1);
+        if(this.setUserLoggedIn(username, true)){
+            p.setLoggedIn(true);
+            System.out.println("User: " + p.getName() + " set as logged in..");
             return p;
         }
         return null;
@@ -101,7 +101,7 @@ public class DBConnection implements java.sql.Driver {
     public boolean userLogout(String username){
         
         try {
-            String sql = "UPDATE user SET loggedIn = 0 WHERE username like '" + username + "'";
+            String sql = "UPDATE users SET loggedIn = 0 WHERE username like '" + username + "'";
             
             Statement statement = connection.createStatement();
             int rs = statement.executeUpdate(sql);
@@ -114,49 +114,159 @@ public class DBConnection implements java.sql.Driver {
         }
     }
     
-    public boolean registerUser(String username, String password, String name) throws SQLException {
+    public boolean registerUser(User user) throws SQLException {
         
-        //TODO insert player on database
-        String selectTableSQL = "INSERT INTO user(name, username, password) VALUES (?,?,?,?)" ;
+        //TODO insert user on database
+        String selectTableSQL = "INSERT INTO users(name, username, password) VALUES (?,?,?)" ;
 
         PreparedStatement pst = connection.prepareCall(selectTableSQL);
-        pst.setString(1, name);
-        pst.setString(2, username);
-        pst.setString(3, password);
-        pst.setInt(4, 1);
+        pst.setString(1, user.getName());
+        pst.setString(2, user.getUsername());
+        pst.setString(3, user.getPassword());
 
         int rs = pst.executeUpdate();
+        pst.close();
         if(rs == 0) 
             return false;
         return true;
     }
     
-    private boolean setUserLoggedIn(String username){
+    public boolean setUserLoggedIn(String username, boolean isLogged){
         
         try {
-            String sql = "UPDATE user SET loggedIn = 1 WHERE username like '" + username + "'";
+            String sql = "UPDATE users SET isLogged = ? WHERE username like ?";
+
+            PreparedStatement pst = connection.prepareCall(sql);
             
-            Statement statement = connection.createStatement();
-            int rs = statement.executeUpdate(sql);
+            pst.setBoolean(1, isLogged);
+            pst.setString(2, username);
+
+
+            int rs = pst.executeUpdate();
+            pst.close();
             if(rs == 0) 
                 return false;
             return true;
         } catch (SQLException ex) {
-            System.out.println("error updating status of user.. :" + ex);
+            System.out.println("error updating status of user - isLogged.. :" + ex);
             return false;
         }
     }
+    
+    public boolean setUserDetails(String ip, int udp_port, int tcp_port, String username){
+        
+        try {
+            String sql = "UPDATE users SET ip = ?, udp_port = ?, tcp_port = ?  WHERE username like ?";
+
+            PreparedStatement pst = connection.prepareCall(sql);
+            
+            pst.setString(1, ip);
+            pst.setInt(2, udp_port);
+            pst.setInt(3, tcp_port);
+            pst.setString(4, username);
+            
+            int rs = pst.executeUpdate();
+            pst.close();
+            if(rs == 0) 
+                return false;
+            return true;
+        } catch (SQLException ex) {
+            System.out.println("error updating status of user - isLogged.. :" + ex);
+            return false;
+        }
+     
+    }
+    
+    public boolean incUserCount(String username){
+        
+        try {
+            String sql = "UPDATE users SET count = count + 1 WHERE username like ?";
+
+            PreparedStatement pst = connection.prepareCall(sql);
+            
+            pst.setString(1, username);
+            
+            int rs = pst.executeUpdate();
+            pst.close();
+            if(rs == 0) 
+                return false;
+            return true;
+        } catch (SQLException ex) {
+            System.out.println("error updating status of user - isLogged.. :" + ex);
+            return false;
+        }
+    }
+    
+    public boolean resetUserCount(String username){
+        
+     try {
+            String sql = "UPDATE users SET count = 0 WHERE username like ?";
+
+            PreparedStatement pst = connection.prepareCall(sql);
+            
+            pst.setString(1, username);
+            
+            int rs = pst.executeUpdate();
+            pst.close();
+            if(rs == 0) 
+                return false;
+            return true;
+        } catch (SQLException ex) {
+            System.out.println("error updating status of user - isLogged.. :" + ex);
+            return false;
+        }
+    
+    }
+    
+    public void setUserFilesList(User user, List listOfFiles) {
+        
+        
+        //TODO primeiro remover todos os ficheiros do utilizador se existirem
+        
+        
+        String sql = "insert into ficheiros(username,nome,size) values (?,?,?)";
+        
+        try {
+            connection.setAutoCommit(false);        
+            PreparedStatement prepStmt = connection.prepareStatement(sql);
+            Iterator<Files> it = listOfFiles.iterator();
+            while(it.hasNext()){
+                Files f = it.next();
+                prepStmt.setString(1,user.getUsername());            
+                prepStmt.setString(2, f.getName() );
+                prepStmt.setLong(3, f.getSize());
+                prepStmt.addBatch();                      
+            }
+            
+            int [] numUpdates = prepStmt.executeBatch();
+            for (int i=0; i < numUpdates.length; i++) {
+              if (numUpdates[i] == -2)
+                System.out.println("Execution " + i + ": unknown number of rows updated");
+              else
+                System.out.println("Execution " + i + "successful: " + numUpdates[i] + " rows updated");
+            }
+            connection.commit();
+        }catch(BatchUpdateException b) {
+            System.out.println(b.getMessage());
+
+        }catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+        
+    }
+    
 
     public List<User> listUsers(boolean loggedIn){
         
         
-        List listUser = new ArrayList<User>();
+        List<User> listUser = new ArrayList<>();
         User p;
 
         if(loggedIn){
             try {
                 //get all users loggedIn
-                String sql = "SELECT idplayer, name, username, loggedIn FROM player WHERE loggedIn = 1";
+                String sql = "SELECT name, username, loggedIn FROM users WHERE loggedIn = 1";
                 //String sql = "SELECT * FROM player";
                 Statement statement = connection.createStatement();
                 ResultSet rs = statement.executeQuery(sql);
@@ -170,7 +280,7 @@ public class DBConnection implements java.sql.Driver {
                     p = new User();
                     p.setName(rs.getString("name"));
                     p.setUsername(rs.getString("username"));
-                    p.setLoggedIn(rs.getInt("loggedIn"));
+                    p.setLoggedIn(rs.getBoolean("loggedIn"));
                     System.out.println("RS Player: " + p.toString());
                     listUser.add(p);
                     
@@ -191,43 +301,9 @@ public class DBConnection implements java.sql.Driver {
 
     private User getUser(int id){
 
-        //TODO create query to get informatuion of one user
+        //TODO create query to get information of one user
         return null;
     }
 
-    @Override
-    public Connection connect(String url, Properties info) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean acceptsURL(String url) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getMajorVersion() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getMinorVersion() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean jdbcCompliant() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+    
 }

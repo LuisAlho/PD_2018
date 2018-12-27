@@ -2,6 +2,7 @@
 package utils;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Message implements Serializable{
     
@@ -9,15 +10,30 @@ public class Message implements Serializable{
     
     String type; //Type of message 
     String username;
+    String password;
     String text;
+    User user;
+    List<Files> listOfFiles;
     
     //Add more atributes as needed
    
     
     public Message(){}
 
+    public String getPassword() {
+        return password;
+    }
+
     public String getType() {
         return type;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+    
+    public User getUser() {
+        return this.user;
     }
 
     public void setType(String type) {
@@ -39,5 +55,15 @@ public class Message implements Serializable{
     public void setText(String text) {
         this.text = text;
     }
+
+    public List<Files> getListOfFiles() {
+        return listOfFiles;
+    }
+
+    public void setListOfFiles(List<Files> listOfFiles) {
+        this.listOfFiles = listOfFiles;
+    }
+    
+    
     
 }

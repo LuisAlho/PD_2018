@@ -5,11 +5,13 @@ import java.io.Serializable;
 
 public class User implements Serializable{
     
+    private static final long serialVersionUID = 1L;
+    
     private String name;
     private int id;
     private String password;
     private String username;
-    private Integer loggedIn;
+    private boolean loggedIn;
     
     public User(){}
     
@@ -62,24 +64,17 @@ public class User implements Serializable{
         return id;
     }
 
-    public Integer getLoggedIn() {
+    public boolean isLoggedIn() {
         return loggedIn;
     }
 
-    public void setLoggedIn(Integer loggedIn) {
+    public void setLoggedIn(boolean loggedIn) {
         this.loggedIn = loggedIn;
-    }
-
-    /**
-     * @param id the id to set
-     */
-    public void setId(int id) {
-        this.id = id;
     }
 
     @Override
     public String toString() {
-        return "Player{" + "name=" + name + ", id=" + id + ", password=" + password + ", username=" + username + '}';
+        return "User{" + "name=" + name + ", id=" + id + ", password=" + password + ", username=" + username + '}';
     }
 
     
