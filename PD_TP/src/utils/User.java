@@ -74,7 +74,7 @@ public class User implements Serializable{
 
     @Override
     public String toString() {
-        return "Player{" + "name=" + name + ", id=" + id + ", password=" + password + ", username=" + username + '}';
+        return "User{" + "name=" + name + ", id=" + id + ", password=" + password + ", username=" + username + '}';
     }
 
     
