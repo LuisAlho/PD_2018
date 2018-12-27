@@ -1,6 +1,7 @@
 package utils;
 
 
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -9,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -175,14 +177,6 @@ public class DBConnection {
      
     }
     
-    
-    public boolean setUserFilesList(){
-    
-    
-    
-        return true;
-    }
-    
     public boolean incUserCount(String username){
         
         try {
@@ -222,6 +216,44 @@ public class DBConnection {
             return false;
         }
     
+    }
+    
+    public void setUserFilesList(User user, List listOfFiles) {
+        
+        
+        //TODO primeiro remover todos os ficheiros do utilizador se existirem
+        
+        
+        String sql = "insert into ficheiros(username,nome,size) values (?,?,?)";
+        
+        try {
+            connection.setAutoCommit(false);        
+            PreparedStatement prepStmt = connection.prepareStatement(sql);
+            Iterator<Files> it = listOfFiles.iterator();
+            while(it.hasNext()){
+                Files f = it.next();
+                prepStmt.setString(1,user.getUsername());            
+                prepStmt.setString(2, f.getName() );
+                prepStmt.setLong(3, f.getSize());
+                prepStmt.addBatch();                      
+            }
+            
+            int [] numUpdates = prepStmt.executeBatch();
+            for (int i=0; i < numUpdates.length; i++) {
+              if (numUpdates[i] == -2)
+                System.out.println("Execution " + i + ": unknown number of rows updated");
+              else
+                System.out.println("Execution " + i + "successful: " + numUpdates[i] + " rows updated");
+            }
+            connection.commit();
+        }catch(BatchUpdateException b) {
+            System.out.println(b.getMessage());
+
+        }catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+        
     }
     
 
@@ -272,4 +304,6 @@ public class DBConnection {
         //TODO create query to get information of one user
         return null;
     }
+
+    
 }

@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
+import java.util.List;
 import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,6 +104,16 @@ public class Server extends Observable {
      
          this.db.setUserLoggedIn(username, false);
      
+     }
+     
+     
+     protected void setListOfFiles(User user, List listOfFiles){
+         
+         System.out.println("Update list of files in DB");
+     
+         if((!listOfFiles.isEmpty()) && (listOfFiles != null))
+            db.setUserFilesList(user, listOfFiles);
+         
      }
 
 }

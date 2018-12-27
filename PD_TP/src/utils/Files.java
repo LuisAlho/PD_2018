@@ -14,10 +14,10 @@ import java.io.Serializable;
 public class Files implements Serializable {
     
     private String name;
-    private int size;
+    private long size;
 
     
-    public Files(String name, int size) {
+    public Files(String name, long size) {
         this.name = name;
         this.size = size;
     }
@@ -31,7 +31,7 @@ public class Files implements Serializable {
         this.name = name;
     }
 
-    public int getSize() {
+    public long getSize() {
         return size;
     }
 
