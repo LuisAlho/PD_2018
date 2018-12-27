@@ -44,17 +44,17 @@ public class Server extends Observable {
             ip = args[0];
         }
         Server server =  null;
-        try{
+//        try{
             
             server = new Server(ip, Constants.BD_PORT);
         
             RemoteServer remoteServer;
-            remoteServer = new RemoteServer();
+            //remoteServer = new RemoteServer();
         
-        }catch(RemoteException ex){
-            System.out.println("Error: " + ex.getMessage());
-            System.exit(1);
-        }
+//        }catch(RemoteException ex){
+//            System.out.println("Error: " + ex.getMessage());
+//            System.exit(1);
+//        }
         
         server.startServer();
         
