@@ -3,6 +3,8 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.rmi.RemoteException;
+import java.rmi.server.RemoteServer;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.List;
@@ -41,9 +43,19 @@ public class Server extends Observable {
         }else{ 
             ip = args[0];
         }
+        Server server =  null;
+//        try{
+            
+            server = new Server(ip, Constants.BD_PORT);
         
+            RemoteServer remoteServer;
+            //remoteServer = new RemoteServer();
         
-        Server server = new Server(ip, Constants.BD_PORT);
+//        }catch(RemoteException ex){
+//            System.out.println("Error: " + ex.getMessage());
+//            System.exit(1);
+//        }
+        
         server.startServer();
         
         
@@ -115,5 +127,9 @@ public class Server extends Observable {
             db.setUserFilesList(user, listOfFiles);
          
      }
+
+    protected List<User> getLoggedUsers() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 }
