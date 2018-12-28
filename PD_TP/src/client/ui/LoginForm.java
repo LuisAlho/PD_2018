@@ -183,9 +183,5 @@ public class LoginForm extends JFrame implements Observer {
             }
 
         }
-        
-        
-        
-        
     }
 }

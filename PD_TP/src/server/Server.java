@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.RemoteServer;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
@@ -25,6 +27,7 @@ public class Server extends Observable {
     private HashMap<Thread, User> userThreadList;
     
     
+    
     private final DBConnection db;
     
     public Server(String dbUrl, int dbPort) {
@@ -40,6 +43,7 @@ public class Server extends Observable {
      public static void main(String [] args)  {
         
         String ip = "localhost";
+        Registry r;
 //        ServerSocket socket;
 //        Socket clientSocket;
         
@@ -50,17 +54,45 @@ public class Server extends Observable {
             ip = args[0];
         }
         Server server =  null;
-//        try{
+        server = new Server(ip, Constants.BD_PORT);
+        try {
+            ServerRemote remoteServer = new ServerRemote();
             
-            server = new Server(ip, Constants.BD_PORT);
-        
-            RemoteServer remoteServer;
-            //remoteServer = new RemoteServer();
-        
-//        }catch(RemoteException ex){
-//            System.out.println("Error: " + ex.getMessage());
-//            System.exit(1);
-//        }
+            try{
+            //Init registry
+            try{
+
+                System.out.println("Tentativa de lancamento do registry no porto " + Registry.REGISTRY_PORT + "...");
+                r = LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
+                System.out.println("Registry lancado!");
+
+            }catch(RemoteException e){
+                System.out.println("Registry provavelmente ja' em execucao!");
+                r = LocateRegistry.getRegistry();
+
+            }
+
+            // Cria e lanca o servico,
+            System.out.println("Servico vista criado e em execucao (" + remoteServer.getRef().remoteToString()+"...");
+
+            // Regista o servico para que os clientes possam encontra'-lo, ou seja,
+            // obter a sua referencia remota (endereco IP, porto de escuta, etc.).
+            String serviceName = "ObservacaoSistema";
+            r.bind(serviceName, remoteServer);
+            System.out.println("Servico " + serviceName + "  registado no registry...");
+
+        }catch(RemoteException e){
+            System.out.println("Erro remoto - " + e);
+            System.exit(1);
+        }catch(Exception e){
+            System.out.println("Erro - " + e);
+            System.exit(1);
+        }
+            
+            
+        } catch (RemoteException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         server.startServer();
         
