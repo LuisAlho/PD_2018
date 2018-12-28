@@ -171,8 +171,8 @@ public class LoginForm extends JFrame implements Observer {
             if(msg.getType().equals(Constants.LOGIN_SUCCESSFULL)){
                 this.dispose();
                 client.deleteObserver(this);
-                new ClientUI(client);
-                //new ClientInterface(client);
+                //new ClientUI(client);
+                new ClientInterface(client);
             }else{
                 
                 JOptionPane.showMessageDialog(this,
