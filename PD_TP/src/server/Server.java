@@ -7,6 +7,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.RemoteServer;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Observable;
 import java.util.logging.Level;
@@ -19,13 +21,17 @@ import utils.User;
 public class Server extends Observable {
     
     private ServerSocket serverSocket;
+    private List<User> listUsers;
+    private HashMap<Thread, User> userThreadList;
     
     
     private final DBConnection db;
     
     public Server(String dbUrl, int dbPort) {
         
+        userThreadList =  new HashMap();
         
+        listUsers = new ArrayList();
         //get reference to MySQLDataBase
         db = DBConnection.getInstance(dbUrl, dbPort);
         
@@ -64,8 +70,13 @@ public class Server extends Observable {
      public void startServer(){
          
         System.out.println("Starting server....");
+        
+        
          
         try {
+            
+            System.out.println("Getting list of logged users");
+            this.listUsers = db.listUsersLoggedIn(true);
  
             System.out.println("Waiting for client....");
             serverSocket = new ServerSocket(4555);
@@ -73,8 +84,9 @@ public class Server extends Observable {
             while(true){
                                
                 Socket socketToClient = serverSocket.accept();                
-                new ClientThread(socketToClient, this).start(); //Create thread for each user
-                
+                 //Create thread for each user
+                new ClientThread(socketToClient, this).start();
+                //TODO add to hash map
             }
         }catch (IOException ex) {
            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
@@ -95,14 +107,14 @@ public class Server extends Observable {
      }
      
      
-     protected User loginClient(String username, String password){
+     protected User loginClient(User user){
      
-        User user = null;
+        User new_user = null;
 
         try {
-            user = db.loginUser(username, password);
+            new_user = db.loginUser(user);
             if( user != null)
-                return user;                
+                return new_user;                
             return null;
   
         } catch (SQLException ex) {
@@ -112,9 +124,20 @@ public class Server extends Observable {
                 
      }
      
+     protected void userLogout(User user){
+     
+         if(db.userLogout(user.getUsername())){
+             System.out.println("user logout com sucesso");
+         }else{
+             System.out.println("user logout falhou");
+         }
+     
+     }
+     
+     
      protected void setLoggedIn(String username, boolean loggedIn){
      
-         this.db.setUserLoggedIn(username, false);
+         this.db.setUserLoggedIn(username, loggedIn);
      
      }
      
@@ -131,5 +154,16 @@ public class Server extends Observable {
     protected List<User> getLoggedUsers() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    public List<User> getListUsers() {
+        return listUsers;
+    }
+
+    public void setListUsers(List<User> listUsers) {
+        this.listUsers = listUsers;
+    }
+    
+    
+    
 
 }

@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package server;
 
 import java.io.IOException;
@@ -17,10 +13,8 @@ import utils.Constants;
 import utils.Message;
 import utils.User;
 
-/**
- *
- * @author Nasyx
- */
+//MODULO PARA FAZER TRATAMENTO DA COMUNICAÇÂO COM O CLIENT
+
 public class ClientThread extends Thread implements Observer{
     
     User user;
@@ -34,6 +28,10 @@ public class ClientThread extends Thread implements Observer{
         this.server.addObserver(this);
     }
 
+    
+    
+    
+    //RECEIVE MESSAGE FROM CLIENT
     @Override
     public void run() {
         
@@ -54,13 +52,12 @@ public class ClientThread extends Thread implements Observer{
                 switch( msg.getType()){
 
                     case "LOGIN":
-                        System.out.println("Ip: " + socketToClient.getInetAddress());
-                        System.out.println("Port: " + socketToClient.getPort());
-                        System.out.println("User: " + msg.getUser().toString());
-                        
-                        user = server.loginClient(msg.getUser().getUsername(), msg.getUser().getPassword());
-                        
+          
+                        user = server.loginClient(msg.getUser());
+ 
                         if(user != null){
+                            System.out.println("User login: " + user.toString());
+                            server.getListUsers().add(user);
                             msg.setType(Constants.LOGIN_SUCCESSFULL);
                             msg.setUser(user);
                         }
@@ -69,12 +66,12 @@ public class ClientThread extends Thread implements Observer{
                         }
                         sendMessage(msg);
                         
-                        break;      
+                        break;
+                        
                     case "REGISTER":
-                        System.out.println("Ip: " + socketToClient.getInetAddress());
-                        System.out.println("Port: " + socketToClient.getPort());
-                        System.out.println("User: " + msg.getUser().toString());
+                        
                         if(server.registerClient(msg.getUser())){
+                            System.out.println("Registado com sucesso");
                             msg.setType(Constants.REGISTER_SUCCESSFULL);
                             
                         }else{
@@ -98,18 +95,32 @@ public class ClientThread extends Thread implements Observer{
             
         } catch (IOException ex) {
             System.out.println("Error IO: " + ex);
-            
+            System.out.println("Clean user: " + user);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }catch(Exception ex){
+            System.out.println("Error: " + ex.getMessage());
+        
         }finally {
-
+            System.out.println("Finally");
             this.server.deleteObserver(this);
-            if(this.user != null)
-                this.server.setLoggedIn(this.user.getUsername(), false);
+            if(this.user != null){
+                System.out.println("Clean user: " + this.user.getUsername());
+                //this.server.setLoggedIn(this.user.getUsername(), false);
+                this.server.userLogout(user);
+                
+            }
+//                this.server.getListUsers().forEach( (User item) -> {
+//                    if(item.getUsername().equals(user.getUsername())){
+//                        this.server.getListUsers().remove(item);
+//                    }
+//                });
                      
         }
     }
 
+    
+    //RECEIVE NOTIFICATIONS FROM SERVER
     @Override
     public void update(Observable o, Object arg) {
         

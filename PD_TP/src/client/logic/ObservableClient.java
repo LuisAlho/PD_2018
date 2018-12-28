@@ -38,6 +38,7 @@ public class ObservableClient extends Observable implements Runnable { //Class q
     private DatagramSocket dtSocket;
     private User user;
     private List<Files> listOfFiles;
+    private List<User> listOfLoggedUsers;
    
     
     public ObservableClient(InetAddress server, int port) {
@@ -75,7 +76,6 @@ public class ObservableClient extends Observable implements Runnable { //Class q
     public void registerUser(User user){
         
         //Create Message
-        
         Message msg = new Message();
         
         msg.setType(Constants.REGISTER);
@@ -101,6 +101,10 @@ public class ObservableClient extends Observable implements Runnable { //Class q
         //Create Message
         
         Message msg = new Message();
+        user.setIp(this.socket.getLocalAddress().toString());
+        user.setPorto_tcp(this.socket.getLocalPort());
+        //TODO change this
+        user.setPorto_udp(123412);
         
         msg.setType(Constants.LOGIN);
         msg.setUser(user);
@@ -118,6 +122,33 @@ public class ObservableClient extends Observable implements Runnable { //Class q
             
             System.out.println("Login client error");
             
+            Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+    
+    
+    public void logoutUser(User user){
+        
+        //Create Message
+        
+        Message msg = new Message();
+       
+        
+        msg.setType(Constants.LOGOUT);
+        msg.setUser(user);
+        
+        
+        // Send Message
+        ObjectOutputStream out;
+        try {
+            out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(msg);
+            out.flush();
+            
+            
+        } catch (IOException ex) {
+            System.out.println("Logout client error");
             Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -181,7 +212,7 @@ public class ObservableClient extends Observable implements Runnable { //Class q
     }
     
     
-
+    //RECEIVE MESSAGES FROM SERVER
     @Override
     public void run() {
         
@@ -206,8 +237,7 @@ public class ObservableClient extends Observable implements Runnable { //Class q
                         System.out.println("Message: " + msg.getType());
                         
                         user = msg.getUser();
-                        
-                        
+
                         setChanged();
                         notifyObservers(msg);
                         
@@ -231,6 +261,15 @@ public class ObservableClient extends Observable implements Runnable { //Class q
                     case Constants.REGISTER_FAIL:
                         System.out.println("Message: " + msg.getType());
                         
+                        setChanged();
+                        notifyObservers(msg);
+                        
+                        break;
+                        
+                    case Constants.LOGOUT:
+                        
+                        System.out.println("Message: " + msg.getType());
+
                         setChanged();
                         notifyObservers(msg);
                         
