@@ -43,18 +43,14 @@ public class DBConnection {
         
         //jdbc:mysql://localhost/test?" +"user=minty&password=greatsqldb"
         
-        String DB_CONNECTION = "jdbc:mysql://" + url +"/"+ bdName+"?user=" + DB_USER + "&password=" + DB_PASSWORD ;
+        String DB_CONNECTION = "jdbc:mysql://" + url + ":" + port + "/" + bdName;
         //String DB_CONNECTION = "jdbc:mysql://" + url +"/"+ bdName+"?user=" + DB_USER;
         System.out.println(DB_CONNECTION);
         try {
-            Class.forName(DB_DRIVER).newInstance();
+            Class.forName(DB_DRIVER);
         } catch (ClassNotFoundException e) {
             System.out.println("No driver found.... baddd");
             System.out.println(e.getMessage());
-        } catch (InstantiationException ex) {
-            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
             dbConnection = DriverManager.getConnection(DB_CONNECTION, DB_USER, DB_PASSWORD);
