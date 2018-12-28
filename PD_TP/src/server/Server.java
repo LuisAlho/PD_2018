@@ -56,7 +56,7 @@ public class Server extends Observable {
         Server server =  null;
         server = new Server(ip, Constants.BD_PORT);
         try {
-            ServerRemote remoteServer = new ServerRemote();
+            ServerRemote remoteServer = new ServerRemote(server);
             
             try{
             //Init registry

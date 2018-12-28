@@ -15,9 +15,9 @@ public class ServerRemote extends UnicastRemoteObject implements ServerRemoteInt
     private Server server;
     
     
-    public ServerRemote() throws RemoteException{
+    public ServerRemote(Server server) throws RemoteException{
         super();
-        //this.server = server;
+        this.server = server;
         
     }
 
