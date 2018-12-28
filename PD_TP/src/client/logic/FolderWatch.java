@@ -50,6 +50,7 @@ public class FolderWatch implements Runnable {
             while ((key = watchService.take()) != null) {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     System.out.println("Event kind:" + event.kind() + ". File affected: " + event.context() + ".");
+                    //TODO update file list
                 }
                 key.reset();
             }

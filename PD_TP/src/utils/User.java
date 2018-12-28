@@ -7,11 +7,14 @@ public class User implements Serializable{
     
     private static final long serialVersionUID = 1L;
     
-    private String name;
     private int id;
+    private String name;
     private String password;
     private String username;
     private boolean loggedIn;
+    private int porto_udp;
+    private int porto_tcp;
+    private String ip;
     
     public User(){}
     
@@ -41,6 +44,30 @@ public class User implements Serializable{
      */
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public int getPorto_udp() {
+        return porto_udp;
+    }
+
+    public void setPorto_udp(int porto_udp) {
+        this.porto_udp = porto_udp;
+    }
+
+    public int getPorto_tcp() {
+        return porto_tcp;
+    }
+
+    public void setPorto_tcp(int porto_tcp) {
+        this.porto_tcp = porto_tcp;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 
     /**

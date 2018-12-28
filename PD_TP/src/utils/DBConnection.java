@@ -15,10 +15,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author Nasyx
- */
 public class DBConnection {
     
     private static final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
@@ -48,6 +44,7 @@ public class DBConnection {
         //jdbc:mysql://localhost/test?" +"user=minty&password=greatsqldb"
         
         String DB_CONNECTION = "jdbc:mysql://" + url +"/"+ bdName+"?user=" + DB_USER + "&password=" + DB_PASSWORD ;
+        //String DB_CONNECTION = "jdbc:mysql://" + url +"/"+ bdName+"?user=" + DB_USER;
         System.out.println(DB_CONNECTION);
         try {
             Class.forName(DB_DRIVER).newInstance();
@@ -72,11 +69,11 @@ public class DBConnection {
 
     }
     
-    public User loginUser(String username, String password) throws SQLException, SQLSyntaxErrorException {
+    public User loginUser(User user) throws SQLException, SQLSyntaxErrorException {
         
         User p =  new User();
         
-        String selectTableSQL = "SELECT password, name, username FROM users WHERE (password like '" + password + "') AND (username like '" + username + "')";
+        String selectTableSQL = "SELECT password, name, username FROM users WHERE (password like '" + user.getPassword() + "') AND (username like '" + user.getUsername() + "') AND (isLogged != 1)";
         System.out.println(selectTableSQL);
         Statement statement = connection.createStatement();
         ResultSet rs = statement.executeQuery(selectTableSQL);
@@ -90,9 +87,13 @@ public class DBConnection {
             p.setUsername(rs.getString("username"));
         }
         
-        if(this.setUserLoggedIn(username, true)){
+        if(this.setUserDetails(user)){
+            System.out.println("User update");
+        }
+        
+        if(this.setUserLoggedIn(user.getUsername(), true)){
             p.setLoggedIn(true);
-            System.out.println("User: " + p.getName() + " set as logged in..");
+            //System.out.println("User: " + p.getName() + " set as logged in..");
             return p;
         }
         return null;
@@ -101,15 +102,16 @@ public class DBConnection {
     public boolean userLogout(String username){
         
         try {
-            String sql = "UPDATE users SET loggedIn = 0 WHERE username like '" + username + "'";
+            String sql = "UPDATE users SET isLogged = 0 WHERE username like '" + username + "'";
             
             Statement statement = connection.createStatement();
             int rs = statement.executeUpdate(sql);
+            
             if(rs == 0) 
                 return false;
             return true;
         } catch (SQLException ex) {
-            System.out.println("error updating table player.. :" + ex);
+            System.out.println("error logout client.. :" + ex);
             return false;
         }
     }
@@ -133,6 +135,8 @@ public class DBConnection {
     
     public boolean setUserLoggedIn(String username, boolean isLogged){
         
+        
+        
         try {
             String sql = "UPDATE users SET isLogged = ? WHERE username like ?";
 
@@ -140,10 +144,11 @@ public class DBConnection {
             
             pst.setBoolean(1, isLogged);
             pst.setString(2, username);
-
-
+            
             int rs = pst.executeUpdate();
-            pst.close();
+            
+            System.out.println("SET USER " + username + " logged to: " + isLogged);
+            //pst.close();
             if(rs == 0) 
                 return false;
             return true;
@@ -153,25 +158,25 @@ public class DBConnection {
         }
     }
     
-    public boolean setUserDetails(String ip, int udp_port, int tcp_port, String username){
+    public boolean setUserDetails(User user){
         
         try {
             String sql = "UPDATE users SET ip = ?, udp_port = ?, tcp_port = ?  WHERE username like ?";
 
             PreparedStatement pst = connection.prepareCall(sql);
             
-            pst.setString(1, ip);
-            pst.setInt(2, udp_port);
-            pst.setInt(3, tcp_port);
-            pst.setString(4, username);
+            pst.setString(1, user.getIp());
+            pst.setInt(2, user.getPorto_udp());
+            pst.setInt(3, user.getPorto_tcp());
+            pst.setString(4, user.getUsername());
             
             int rs = pst.executeUpdate();
-            pst.close();
+            //pst.close();
             if(rs == 0) 
                 return false;
             return true;
         } catch (SQLException ex) {
-            System.out.println("error updating status of user - isLogged.. :" + ex);
+            System.out.println("error updating status of user - details.. :" + ex);
             return false;
         }
      
@@ -187,7 +192,7 @@ public class DBConnection {
             pst.setString(1, username);
             
             int rs = pst.executeUpdate();
-            pst.close();
+            //pst.close();
             if(rs == 0) 
                 return false;
             return true;
@@ -257,7 +262,7 @@ public class DBConnection {
     }
     
 
-    public List<User> listUsers(boolean loggedIn){
+    public List<User> listUsersLoggedIn(boolean loggedIn){
         
         
         List<User> listUser = new ArrayList<>();
@@ -266,22 +271,22 @@ public class DBConnection {
         if(loggedIn){
             try {
                 //get all users loggedIn
-                String sql = "SELECT name, username, loggedIn FROM users WHERE loggedIn = 1";
+                String sql = "SELECT * FROM users WHERE isLogged = 1";
                 //String sql = "SELECT * FROM player";
                 Statement statement = connection.createStatement();
                 ResultSet rs = statement.executeQuery(sql);
                 System.out.println("RS List logged users: " + rs);                
                 if (!rs.isBeforeFirst() ) { 
                     System.out.println("No data"); 
-                    return null;
+                    return listUser;
                 }
                 
                 while (rs.next()) {
                     p = new User();
                     p.setName(rs.getString("name"));
                     p.setUsername(rs.getString("username"));
-                    p.setLoggedIn(rs.getBoolean("loggedIn"));
-                    System.out.println("RS Player: " + p.toString());
+                    p.setLoggedIn(rs.getBoolean("isLogged"));
+                    System.out.println("User: " + p.toString());
                     listUser.add(p);
                     
                 }                
@@ -292,7 +297,30 @@ public class DBConnection {
             
             
         }else{
-            //TODO get list of all users
+            try {
+                //get all users loggedIn
+                String sql = "SELECT * FROM users";
+                //String sql = "SELECT * FROM player";
+                Statement statement = connection.createStatement();
+                ResultSet rs = statement.executeQuery(sql);
+                System.out.println("RS List logged users: " + rs);                
+                if (!rs.isBeforeFirst() ) { 
+                    System.out.println("No data"); 
+                    return listUser;
+                }
+                
+                while (rs.next()) {
+                    p = new User();
+                    p.setName(rs.getString("name"));
+                    p.setUsername(rs.getString("username"));
+                    p.setLoggedIn(rs.getBoolean("isLogged"));
+                    listUser.add(p);
+                    
+                }                
+                return listUser;
+            } catch (SQLException ex) {
+                Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         //TODO create query to list all users on DB
