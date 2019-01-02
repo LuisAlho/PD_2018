@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -36,21 +37,40 @@ public class ObservableClient extends Observable implements Runnable { //Class q
     private final FolderWatch folderWatch;
     private DownloadFiles dFiles;
     private DatagramSocket dtSocket;
-    private User user;
+    public User user;
     private List<Files> listOfFiles;
+    private List<User> listOfLoggedUsers;
+    private UploadFiles uploadFiles;
+    private ServerSocket serverSocket;
+    private ClientUdpService udpService;
    
     
     public ObservableClient(InetAddress server, int port) {
         
         this.serverPort = port;
         this.server = server;
+        
         folderWatch = new FolderWatch(this);
     }
     
     
     public boolean startConnectionToServer(){
         
+        try {
+            dtSocket = new DatagramSocket();
+            serverSocket = new ServerSocket(0);
+            
+            
+        } catch (IOException ex) {
+            Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+        System.out.println("ServerSocket: " + serverSocket);
+        uploadFiles = new UploadFiles(serverSocket);
+        //udpService = new ClientUdpService(this, dtSocket);
         
+        
+        new Thread(udpService).start();  
         new Thread(folderWatch).start();
     
         try {
@@ -75,7 +95,6 @@ public class ObservableClient extends Observable implements Runnable { //Class q
     public void registerUser(User user){
         
         //Create Message
-        
         Message msg = new Message();
         
         msg.setType(Constants.REGISTER);
@@ -101,6 +120,10 @@ public class ObservableClient extends Observable implements Runnable { //Class q
         //Create Message
         
         Message msg = new Message();
+        user.setIp(this.serverSocket.getInetAddress().toString());
+        user.setPorto_tcp(this.serverSocket.getLocalPort());
+        //TODO change this
+        user.setPorto_udp(dtSocket.getLocalPort());
         
         msg.setType(Constants.LOGIN);
         msg.setUser(user);
@@ -123,6 +146,33 @@ public class ObservableClient extends Observable implements Runnable { //Class q
 
     }
     
+    
+    public void logoutUser(User user){
+        
+        //Create Message
+        
+        Message msg = new Message();
+       
+        
+        msg.setType(Constants.LOGOUT);
+        msg.setUser(user);
+        
+        
+        // Send Message
+        ObjectOutputStream out;
+        try {
+            out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(msg);
+            out.flush();
+            
+            
+        } catch (IOException ex) {
+            System.out.println("Logout client error");
+            Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+    
     public void listFolder(String path){
         
         System.out.println("Get list of files...");
@@ -139,7 +189,7 @@ public class ObservableClient extends Observable implements Runnable { //Class q
             files.forEach((item) -> {
                 listOfFiles.add(new Files(item.getName(),item.length()));
             });
-        
+            
             sendFilesList();
         
         }catch(Exception ex){
@@ -162,6 +212,11 @@ public class ObservableClient extends Observable implements Runnable { //Class q
         //TODO verifu if is not null
         msg.setListOfFiles(listOfFiles);
         
+        //notifica oberserver
+        System.out.println("Notifiers: " + this.countObservers());
+        this.setChanged();
+        this.notifyObservers(msg);
+        
         
         // Send Message
         ObjectOutputStream out;
@@ -181,7 +236,7 @@ public class ObservableClient extends Observable implements Runnable { //Class q
     }
     
     
-
+    //RECEIVE MESSAGES FROM SERVER
     @Override
     public void run() {
         
@@ -206,8 +261,7 @@ public class ObservableClient extends Observable implements Runnable { //Class q
                         System.out.println("Message: " + msg.getType());
                         
                         user = msg.getUser();
-                        
-                        
+
                         setChanged();
                         notifyObservers(msg);
                         
@@ -236,6 +290,42 @@ public class ObservableClient extends Observable implements Runnable { //Class q
                         
                         break;
                         
+                    case Constants.LOGOUT:
+                        
+                        System.out.println("Message: " + msg.getType());
+
+                        setChanged();
+                        notifyObservers(msg);
+                        
+                        break;
+                        
+                        
+                    case Constants.GET_FILES_DOWNLOAD:
+                        
+                        System.out.println("Received List of Download Files");
+                        
+                        setChanged();
+                        notifyObservers(msg);
+                        
+                        break;
+                        
+                    case Constants.GET_LOGGED_USERS:
+                        
+                        System.out.println("Received list of users logged");
+                        
+                        this.listOfLoggedUsers = msg.getListOfUsers();
+                        
+                        break;
+                        
+                        
+                    case "UPDATE_LOGIN":
+                        System.out.println("Received list of users logged");
+                        
+                        this.listOfLoggedUsers = msg.getListOfUsers();
+                        
+                        break;
+                    
+                        
                     default: break;
                     
                 }
@@ -253,6 +343,105 @@ public class ObservableClient extends Observable implements Runnable { //Class q
 //            } catch (IOException ex) {
 //                Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
 //            }
+        }
+    }
+
+    public void getListForDownload() {
+        
+        
+        //Create Message
+        
+        Message msg = new Message();
+       
+        
+        msg.setType(Constants.GET_FILES_DOWNLOAD);
+        msg.setUser(user);
+        
+        
+        // Send Message
+        ObjectOutputStream out;
+        try {
+            out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(msg);
+            out.flush();
+            
+            
+        } catch (IOException ex) {
+            System.out.println("Logout client error");
+            Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        
+    }
+
+    public void getMyHistoryFiles() {
+        
+        //Create Message
+        
+        Message msg = new Message();
+       
+        
+        msg.setType(Constants.GET_HISTORY_FILES);
+        msg.setUser(user);
+        
+        
+        // Send Message
+        ObjectOutputStream out;
+        try {
+            out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(msg);
+            out.flush();
+            
+            
+        } catch (IOException ex) {
+            System.out.println("Logout client error");
+            Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+       
+    }
+    
+    
+    public void downloadFile(String fileName, String username, ObservableClient client){
+        
+        String ip;
+        int port;
+        
+        for (User u: this.listOfLoggedUsers){
+            
+            if(u.getUsername().equals(username) && (u.getUsername() == null ? user.getUsername() != null : !u.getUsername().equals(user.getUsername()))){
+                ip = u.getIp();
+                port = u.getPorto_tcp();
+                new Thread(new DownloadFiles(client, fileName, ip, port)).start();
+                break;
+            }
+            
+        }
+        
+    }
+    
+    public void getLoggedUsers(){
+    
+         //Create Message
+        
+        Message msg = new Message();
+       
+        
+        msg.setType(Constants.GET_LOGGED_USERS);
+        msg.setUser(user);
+        
+        
+        // Send Message
+        ObjectOutputStream out;
+        try {
+            out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(msg);
+            out.flush();
+            
+            
+        } catch (IOException ex) {
+            System.out.println("GET LIST LOGGED USERS");
+            Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
        

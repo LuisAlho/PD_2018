@@ -7,6 +7,7 @@ package utils;
 
 import java.io.Serializable;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  *
@@ -14,15 +15,17 @@ import java.util.Calendar;
  */
 public class UserHistory implements Serializable {
     
-     private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
      
-     String username;
-     Files file;
-     String remoteUser;
-     boolean received;
-     Calendar date;
+    String username;
+    Files file;
+    String remoteUser;
+    boolean received;
+    Date date;
+     
+    public UserHistory(){}
 
-    public UserHistory(String username, Files file, String remoteUser, boolean received, Calendar date) {
+    public UserHistory(String username, Files file, String remoteUser, boolean received, Date date) {
         this.username = username;
         this.file = file;
         this.remoteUser = remoteUser;
@@ -62,11 +65,11 @@ public class UserHistory implements Serializable {
         this.received = received;
     }
 
-    public Calendar getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(Calendar date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 

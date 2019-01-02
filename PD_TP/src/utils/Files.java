@@ -15,11 +15,22 @@ public class Files implements Serializable {
     
     private String name;
     private long size;
+    private String username;
 
+    public Files() {
+    }
     
     public Files(String name, long size) {
         this.name = name;
         this.size = size;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
     
 

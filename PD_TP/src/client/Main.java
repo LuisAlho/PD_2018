@@ -13,14 +13,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
-    
-    
+  
     private int serverPort;
     private String serverIp;
     private Socket socket;
  
-    
-    
     public static void main(String [] args) {
         
         
@@ -53,9 +50,7 @@ public class Main {
             System.exit(0);
         
         }
-            
-        
-        
+
         System.out.println("Start UI");
         //Start client UI
         LoginForm LoginForm = new LoginForm(obsClient);
