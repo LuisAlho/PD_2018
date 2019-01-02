@@ -144,7 +144,7 @@ public class DBConnection {
             int rs = pst.executeUpdate();
             
             System.out.println("SET USER " + username + " logged to: " + isLogged);
-            //pst.close();
+            pst.close();
             if(rs == 0) 
                 return false;
             return true;
@@ -167,7 +167,7 @@ public class DBConnection {
             pst.setString(4, user.getUsername());
             
             int rs = pst.executeUpdate();
-            //pst.close();
+            pst.close();
             if(rs == 0) 
                 return false;
             return true;
@@ -188,7 +188,7 @@ public class DBConnection {
             pst.setString(1, username);
             
             int rs = pst.executeUpdate();
-            //pst.close();
+            pst.close();
             if(rs == 0) 
                 return false;
             return true;
@@ -224,11 +224,28 @@ public class DBConnection {
         
         //TODO primeiro remover todos os ficheiros do utilizador se existirem
         
-        
-        String sql = "insert into ficheiros(username,nome,size) values (?,?,?)";
+        String sql = "DELETE FROM ficheiros WHERE username = ?";
         
         try {
-            connection.setAutoCommit(false);        
+            PreparedStatement delFiles = connection.prepareStatement(sql);
+            
+            delFiles.setString(1, user.getUsername());
+            
+            int rs = delFiles.executeUpdate();
+            System.out.println("Detlete rows: " + rs);
+            delFiles.close();
+            
+        } catch (SQLException ex) {
+            System.out.println("Error: " + ex.getMessage());
+            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        //Insert files to DB
+
+        sql = "insert into ficheiros(username,nome,size) values (?,?,?)";
+        
+        try {
+            //connection.setAutoCommit(true);        
             PreparedStatement prepStmt = connection.prepareStatement(sql);
             Iterator<Files> it = listOfFiles.iterator();
             while(it.hasNext()){
@@ -246,7 +263,8 @@ public class DBConnection {
               else
                 System.out.println("Execution " + i + "successful: " + numUpdates[i] + " rows updated");
             }
-            connection.commit();
+            //connection.commit();
+            prepStmt.close();
         }catch(BatchUpdateException b) {
             System.out.println(b.getMessage());
 
@@ -327,6 +345,41 @@ public class DBConnection {
 
         //TODO create query to get information of one user
         return null;
+    }
+
+    public List<Files> getDownloadsFiles() {
+        
+        String sql = "Select * FROM ficheiros";
+        
+        List<Files> list = new ArrayList();
+        
+        try {
+            PreparedStatement pst = connection.prepareStatement(sql);
+            
+            ResultSet rs = pst.executeQuery();
+        
+            System.out.println("Detlete rows: " + rs);
+            
+            if (!rs.isBeforeFirst() ) { 
+                System.out.println("No data"); 
+                return null;
+            }
+        
+            while (rs.next()) {
+                Files f = new Files();
+                f.setName(rs.getString("nome"));
+                f.setSize(rs.getInt("size"));
+                f.setUsername(rs.getString("username"));
+                list.add(f);
+            }
+            pst.close();
+            return list;
+            
+        } catch (SQLException ex) {
+            System.out.println("Error: " + ex.getMessage());
+            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+            return list;
+        }
     }
 
     

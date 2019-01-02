@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.Constants;
+import utils.Files;
 import utils.Message;
 import utils.User;
 
@@ -86,6 +88,18 @@ public class ClientThread extends Thread implements Observer{
                         System.out.println("List of files received: " + msg.getType());
                         server.setListOfFiles(msg.getUser(), msg.getListOfFiles());
                             
+                        
+                        break;
+                        
+                    case Constants.GET_FILES_DOWNLOAD:
+                        
+                        System.out.println("List of files received: " + msg.getType());
+                        
+                        List<Files> files = server.getFilesForDownload();
+                        
+                        msg.setListOfFiles(files);
+                        
+                        this.sendMessage(msg);
                         
                         break;
 

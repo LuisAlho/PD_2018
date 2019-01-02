@@ -170,7 +170,7 @@ public class ObservableClient extends Observable implements Runnable { //Class q
             files.forEach((item) -> {
                 listOfFiles.add(new Files(item.getName(),item.length()));
             });
-        
+            
             sendFilesList();
         
         }catch(Exception ex){
@@ -192,6 +192,11 @@ public class ObservableClient extends Observable implements Runnable { //Class q
         
         //TODO verifu if is not null
         msg.setListOfFiles(listOfFiles);
+        
+        //notifica oberserver
+        System.out.println("Notifiers: " + this.countObservers());
+        this.setChanged();
+        this.notifyObservers(msg);
         
         
         // Send Message
@@ -275,6 +280,16 @@ public class ObservableClient extends Observable implements Runnable { //Class q
                         
                         break;
                         
+                        
+                    case Constants.GET_FILES_DOWNLOAD:
+                        
+                        System.out.println("Received List of Download Files");
+                        
+                        setChanged();
+                        notifyObservers(msg);
+                        
+                        break;
+                        
                     default: break;
                     
                 }
@@ -293,6 +308,35 @@ public class ObservableClient extends Observable implements Runnable { //Class q
 //                Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
 //            }
         }
+    }
+
+    public void getListForDownload() {
+        
+        
+        //Create Message
+        
+        Message msg = new Message();
+       
+        
+        msg.setType(Constants.GET_FILES_DOWNLOAD);
+        msg.setUser(user);
+        
+        
+        // Send Message
+        ObjectOutputStream out;
+        try {
+            out = new ObjectOutputStream(socket.getOutputStream());
+            out.writeObject(msg);
+            out.flush();
+            
+            
+        } catch (IOException ex) {
+            System.out.println("Logout client error");
+            Logger.getLogger(ObservableClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+        
     }
        
 }

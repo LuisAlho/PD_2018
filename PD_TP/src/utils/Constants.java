@@ -16,4 +16,5 @@ public interface Constants {
     public static final String REGISTER_FAIL = "REGISTER_FAIL";
     public static final String SET_LIST_OF_FILES = "SET_LIST_OF_FILES";
     public static final String LOGOUT = "LOGOUT";
+    public static String GET_FILES_DOWNLOAD = "GET_FILES_DOWNLOAD";
 }

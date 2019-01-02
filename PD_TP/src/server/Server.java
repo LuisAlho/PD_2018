@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.Constants;
 import utils.DBConnection;
+import utils.Files;
 import utils.Message;
 import utils.User;
 
@@ -193,6 +194,12 @@ public class Server extends Observable {
 
     public void setListUsers(List<User> listUsers) {
         this.listUsers = listUsers;
+    }
+
+    public List<Files> getFilesForDownload() {
+       
+        return this.db.getDownloadsFiles();
+        
     }
     
     

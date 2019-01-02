@@ -3,28 +3,44 @@ package client.ui;
 
 import client.logic.ObservableClient;
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JFrame;
 import javax.swing.table.DefaultTableModel;
+import utils.Constants;
+import utils.Files;
+import utils.Message;
 import utils.User;
+import utils.UserHistory;
 
 
 public class ClientInterface extends JFrame implements Observer {
     
     ObservableClient client;
     
+    private List<Files> myListfiles;
+    private List<Files> listDownloadfiles;
+    private List<UserHistory> listUserHistory;
+    
 
     public ClientInterface(ObservableClient client) {
         initComponents();
         
+        this.myListfiles = new ArrayList();
+        this.listDownloadfiles = new ArrayList();
+        this.listUserHistory = new ArrayList();
+        
         /* Create and display the form */
         this.client = client;
+        this.client.addObserver(this);
         this.setLocationRelativeTo(null);
         this.setVisible(true);
         //adiciona ClientUI a lista de observers
         this.sendListOfFiles();
-        this.client.addObserver(this);
+        this.getListFilesDownload();
+        
    
     }
     
@@ -32,11 +48,13 @@ public class ClientInterface extends JFrame implements Observer {
         
         String folder = "./downloads";
         System.out.println("List files.... button: " + folder);
-        this.client.listFolder(folder);
-        
-        myFilesModel.setColumnIdentifiers(myFilesColumns);
-        //this.jTblMyFiles.setBackground(Color.red);
-
+        this.client.listFolder(folder);     
+    }
+    
+    private void getListFilesDownload(){
+    
+        this.client.getListForDownload();
+    
     }
 
     
@@ -60,29 +78,22 @@ public class ClientInterface extends JFrame implements Observer {
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jScrollPane6 = new javax.swing.JScrollPane();
-        jTable3 = new javax.swing.JTable();
+        historyTable = new javax.swing.JTable();
         jLabel9 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         myFilesModel = new DefaultTableModel();
+        filesModelDownload = new DefaultTableModel();
+        filesHistoryModel = new DefaultTableModel();
     
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jTblMyFiles.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null},
-                {null, null},
-                {null, null},
-                {null, null}
-            },
-            new String [] {
-                "Name", "Size"
-            }
-        ));
+        this.myFilesModel.setColumnIdentifiers(myFilesColumns);
+        jTblMyFiles.setModel(myFilesModel);
         jTblMyFiles.setCellSelectionEnabled(true);
         jScrollPane1.setViewportView(jTblMyFiles);
 
@@ -91,7 +102,8 @@ public class ClientInterface extends JFrame implements Observer {
         jLabel6.setText("Meus Ficheiros");
         getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 20, -1, -1));
 
-        jTblFiles.setModel(myFilesModel);
+        filesModelDownload.setColumnIdentifiers(myDownloadsColumns);
+        jTblFiles.setModel(filesModelDownload);
         jScrollPane2.setViewportView(jTblFiles);
 
         getContentPane().add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 280, -1, 200));
@@ -131,18 +143,9 @@ public class ClientInterface extends JFrame implements Observer {
         jButton3.setText("Send");
         getContentPane().add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(770, 170, -1, -1));
 
-        jTable3.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
-            },
-            new String [] {
-                "User", "File Name", "Sdsfsize"
-            }
-        ));
-        jScrollPane6.setViewportView(jTable3);
+        filesHistoryModel.setColumnIdentifiers(myHistoryColumns);
+        historyTable.setModel(filesHistoryModel);
+        jScrollPane6.setViewportView(historyTable);
 
         getContentPane().add(jScrollPane6, new org.netbeans.lib.awtextra.AbsoluteConstraints(520, 280, -1, 200));
 
@@ -189,12 +192,17 @@ public class ClientInterface extends JFrame implements Observer {
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTable jTblFiles;
-    private javax.swing.JTable jTable3;
+    private javax.swing.JTable historyTable;
     private javax.swing.JTable jTblMyFiles;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     private DefaultTableModel myFilesModel;
-    private final Object[] myFilesColumns = {"Name","Size"};
+    private DefaultTableModel filesModelDownload;
+    private DefaultTableModel filesHistoryModel;
+    
+    private final Object[] myFilesColumns = {"Files", "Size"};
+    private final Object[] myDownloadsColumns = {"User","Files", "Size"};
+    private final Object[] myHistoryColumns = {"Sender", "Receiver",  "File", "size"};
                       
 
     
@@ -202,6 +210,61 @@ public class ClientInterface extends JFrame implements Observer {
     public void update(Observable o, Object arg) {
         
         System.out.println("Update Client");
+        
+        if (arg instanceof Message){
+            
+            Message msg = (Message)arg;
+        
+            switch(msg.getType()){
+            
+                case Constants.SET_LIST_OF_FILES:
+                    
+                    //TODO show list of my files
+                    System.out.println("List of files: " + msg.getListOfFiles());
+                    this.myListfiles = msg.getListOfFiles();
+                    
+                    for (Files s : myListfiles) {
+                        Object[] myFile = new Object[2];
+                        myFile[0] = s.getName();
+                        myFile[1] = s.getSize();
+                        this.myFilesModel.addRow(myFile);
+                    }                
+                    
+                    break;
+                    
+                case Constants.GET_FILES_DOWNLOAD:
+                    
+                    System.out.println("List of files: " + msg.getListOfFiles());
+                    this.listDownloadfiles = msg.getListOfFiles();
+                    
+                    for (Files s : listDownloadfiles) {
+                        Object[] myFile = new Object[3];
+                        myFile[0] = s.getUsername();
+                        myFile[1] = s.getName();
+                        myFile[2] = s.getSize();
+                        this.filesModelDownload.addRow(myFile);
+                    }    
+                    
+                    break;
+                    
+                case "LIST_HISTORY_FILES":
+                    
+                    
+                    break;
+                
+                
+                default: break;
+            
+            
+            }
+        
+        
+        }
+        
+        
+        
+        
+        
         
         
     }
