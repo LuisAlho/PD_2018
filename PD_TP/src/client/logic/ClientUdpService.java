@@ -12,31 +12,32 @@ import utils.Message;
 
 public class ClientUdpService implements Runnable {
     
-    private ObservableClient client;
-    private DatagramSocket dtSocket;
+    private final ObservableClient client;
+    private final DatagramSocket dtSocket;
     private DatagramPacket dtPacket;
     private Message msg;
 
-    public ClientUdpService(ObservableClient client, DatagramSocket dtSocket) throws SocketException {
+    public ClientUdpService(ObservableClient client, DatagramSocket dtSocket) {
         this.client = client;
-        dtSocket = new DatagramSocket();
-       
+        this.dtSocket = dtSocket;
     }
 
     @Override
     public void run() {
         
-         
+        System.out.println("Inicia UDP service" + dtSocket);
+        
         while(true){
         
             try {
+                
                 dtSocket.receive(dtPacket);
                 
                 Object obj = dtPacket.getData();
                 
                 if(obj instanceof Message){
                     msg = (Message)obj;
-                    
+                    System.out.println("UDP: " + msg.getType());
                     switch(msg.getType()){
                     
                     

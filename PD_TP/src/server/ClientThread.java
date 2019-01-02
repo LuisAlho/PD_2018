@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -14,6 +15,7 @@ import utils.Constants;
 import utils.Files;
 import utils.Message;
 import utils.User;
+import utils.UserHistory;
 
 //MODULO PARA FAZER TRATAMENTO DA COMUNICAÇÂO COM O CLIENT
 
@@ -95,9 +97,39 @@ public class ClientThread extends Thread implements Observer{
                         
                         System.out.println("List of files received: " + msg.getType());
                         
-                        List<Files> files = server.getFilesForDownload();
+                        List<Files> files = new ArrayList();
+                        
+                        files = server.getFilesForDownload();
                         
                         msg.setListOfFiles(files);
+                        
+                        this.sendMessage(msg);
+                        
+                        break;
+                        
+                    case Constants.GET_HISTORY_FILES:
+                        
+                        System.out.println("List of history received: " + msg.getType());
+                        
+                        List<UserHistory> history = new ArrayList();
+                        
+                        history = server.getMyHistoryFiles(msg.getUser());
+                        
+                        msg.setListHistory(history);
+                        
+                        this.sendMessage(msg);
+                        
+                        break;
+                        
+                    case Constants.GET_LOGGED_USERS:
+                        
+                        System.out.println("List of logged users: " + msg.getType());
+                        
+                        List<User> users =  new ArrayList();
+                        
+                        users = server.getLoggedUsers();
+                        
+                        msg.setListOfUsers(users);
                         
                         this.sendMessage(msg);
                         
@@ -147,17 +179,23 @@ public class ClientThread extends Thread implements Observer{
                 Message msg = (Message)arg;
                 System.out.println("MESSAGE TYPE: " + msg.getType());
                 
-//                try {
-//                    
-//                    oos = new ObjectOutputStream(socketToClient.getOutputStream());
-//                    
-//                    oos.writeObject(msg);
-//                    oos.flush();
-//                    
-//                } catch (IOException ex) {
-//                    Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
-//                    System.out.println("Error send message to client");
-//                }
+                switch(msg.getText()){
+                
+                    case Constants.LOGIN_SUCCESSFULL:
+                        
+                        //msg.setType("UPDATE_LOGIN");
+//                        
+//                        try {
+//                            sendMessage(msg);
+//                        } catch (IOException ex) {
+//                            System.out.println("Error send message to update login users: " +ex.getMessage());
+//                            Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+                        
+                        break;
+                        
+                    default: break;
+                }
 
             }else{
 
@@ -179,11 +217,5 @@ public class ClientThread extends Thread implements Observer{
     
     
     }
-    
-    
-    
-    
-    
-    
-    
+ 
 }

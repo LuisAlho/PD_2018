@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -380,6 +381,46 @@ public class DBConnection {
             Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
             return list;
         }
+    }
+
+    public List<UserHistory> getHistoryFiles(User user) {
+        
+        String sql = "Select * FROM history where username like ?";
+        
+        List<UserHistory> list = new ArrayList();
+        
+        try {
+            PreparedStatement pst = connection.prepareStatement(sql);
+            
+            pst.setString(0, user.getUsername());
+            
+            ResultSet rs = pst.executeQuery();
+        
+            System.out.println("Detlete rows: " + rs);
+            
+            if (!rs.isBeforeFirst() ) { 
+                System.out.println("No data"); 
+                return null;
+            }
+        
+            while (rs.next()) {
+                UserHistory f = new UserHistory();
+                f.setUsername(rs.getString("username"));
+                f.setFile(new Files(rs.getString("name_file"), rs.getInt("size_file")));
+                f.setDate(rs.getDate("date"));
+                f.setRemoteUser(rs.getString("remoteUser"));
+                f.setReceived(rs.getBoolean("received"));
+                list.add(f);
+            }
+            pst.close();
+            return list;
+            
+        } catch (SQLException ex) {
+            System.out.println("Error: " + ex.getMessage());
+            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
+            return list;
+        }
+       
     }
 
     

@@ -40,6 +40,8 @@ public class ClientInterface extends JFrame implements Observer {
         //adiciona ClientUI a lista de observers
         this.sendListOfFiles();
         this.getListFilesDownload();
+        //this.getMyHistoryFiles();
+        this.client.getLoggedUsers();
         
    
     }
@@ -55,6 +57,11 @@ public class ClientInterface extends JFrame implements Observer {
     
         this.client.getListForDownload();
     
+    }
+    
+    private void getMyHistoryFiles(){
+    
+        this.client.getMyHistoryFiles();
     }
 
     
@@ -169,6 +176,15 @@ public class ClientInterface extends JFrame implements Observer {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
         // TODO add your handling code here:
+        
+            int row = jTblFiles.getSelectedRow();
+            String username = this.jTblFiles.getModel().getValueAt(row, 0).toString();
+            String fileName = this.jTblFiles.getModel().getValueAt(row, 1).toString();
+            
+            this.client.downloadFile(fileName, username, client);
+        
+        
+        
     }                                        
 
 
@@ -209,7 +225,7 @@ public class ClientInterface extends JFrame implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         
-        System.out.println("Update Client");
+        System.out.println("Update ClientInterface");
         
         if (arg instanceof Message){
             
@@ -218,6 +234,8 @@ public class ClientInterface extends JFrame implements Observer {
             switch(msg.getType()){
             
                 case Constants.SET_LIST_OF_FILES:
+                    
+                    myFilesModel.setNumRows(0);
                     
                     //TODO show list of my files
                     System.out.println("List of files: " + msg.getListOfFiles());
@@ -234,6 +252,8 @@ public class ClientInterface extends JFrame implements Observer {
                     
                 case Constants.GET_FILES_DOWNLOAD:
                     
+                    filesModelDownload.setNumRows(0);
+                    
                     System.out.println("List of files: " + msg.getListOfFiles());
                     this.listDownloadfiles = msg.getListOfFiles();
                     
@@ -242,13 +262,27 @@ public class ClientInterface extends JFrame implements Observer {
                         myFile[0] = s.getUsername();
                         myFile[1] = s.getName();
                         myFile[2] = s.getSize();
-                        this.filesModelDownload.addRow(myFile);
+                        if (!s.getUsername().equals(this.client.user.getUsername()))
+                            this.filesModelDownload.addRow(myFile);
                     }    
                     
                     break;
                     
-                case "LIST_HISTORY_FILES":
+                case Constants.GET_HISTORY_FILES:
                     
+                    filesHistoryModel.setNumRows(0);
+                    
+                    System.out.println("List of files: " + msg.getListOfFiles());
+                    this.listUserHistory = msg.getListHistory();
+                    
+                    for (UserHistory s : listUserHistory) {
+                        Object[] myFile = new Object[4];
+                        myFile[0] = s.getUsername();
+                        myFile[1] = s.getRemoteUser();
+                        myFile[2] = s.getFile().getName();
+                        myFile[3] = s.getFile().getSize();
+                        this.filesHistoryModel.addRow(myFile);
+                    }    
                     
                     break;
                 

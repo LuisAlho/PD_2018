@@ -20,6 +20,7 @@ import utils.DBConnection;
 import utils.Files;
 import utils.Message;
 import utils.User;
+import utils.UserHistory;
 
 public class Server extends Observable {
     
@@ -104,8 +105,6 @@ public class Server extends Observable {
          
         System.out.println("Starting server....");
         
-        
-         
         try {
             
             System.out.println("Getting list of logged users");
@@ -146,8 +145,15 @@ public class Server extends Observable {
 
         try {
             new_user = db.loginUser(user);
-            if( user != null)
-                return new_user;                
+            if( user != null){
+                
+//                Message msg = new Message();
+//                msg.setType(Constants.LOGIN_SUCCESSFULL);
+//                this.setChanged();
+//                this.notifyObservers(msg);
+                return new_user;
+            }
+                              
             return null;
   
         } catch (SQLException ex) {
@@ -185,7 +191,7 @@ public class Server extends Observable {
      }
 
     protected List<User> getLoggedUsers() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return db.listUsersLoggedIn(true);
     }
 
     public List<User> getListUsers() {
@@ -199,6 +205,13 @@ public class Server extends Observable {
     public List<Files> getFilesForDownload() {
        
         return this.db.getDownloadsFiles();
+        
+    }
+
+    public List<UserHistory> getMyHistoryFiles(User user) {
+        
+        return this.db.getHistoryFiles(user);
+        
         
     }
     

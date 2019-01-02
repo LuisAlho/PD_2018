@@ -14,6 +14,8 @@ public class Message implements Serializable{
     String text;
     User user;
     List<Files> listOfFiles;
+    List<UserHistory> listHistory;
+    List<User> listOfUsers;
     
     //Add more atributes as needed
    
@@ -62,6 +64,22 @@ public class Message implements Serializable{
 
     public void setListOfFiles(List<Files> listOfFiles) {
         this.listOfFiles = listOfFiles;
+    }
+
+    public List<UserHistory> getListHistory() {
+        return listHistory;
+    }
+
+    public void setListHistory(List<UserHistory> listHistory) {
+        this.listHistory = listHistory;
+    }
+
+    public List<User> getListOfUsers() {
+        return listOfUsers;
+    }
+
+    public void setListOfUsers(List<User> listOfUsers) {
+        this.listOfUsers = listOfUsers;
     }
     
     
